@@ -1,6 +1,4 @@
-import hashlib
-
-import bcrypt as bcrypt
+from cryptography.fernet import Fernet
 from mysql import connector
 from mysql.connector import errorcode # https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
 import debug
@@ -14,7 +12,7 @@ LOO_TABEL = {
 }
 
 class Andmebaas:
-    def __init__( self, kasutajanimi, parool, andmebaas, host ) -> None:
+    def __init__( self, kasutajanimi: str, parool: str, andmebaas: str, host: str ) -> None:
         self.kasutajanimi = kasutajanimi
         self.parool = parool
         self.andmebaas = andmebaas
@@ -53,7 +51,7 @@ class Andmebaas:
                 print( f'Ei saanud andmebaasiga uhendust luua.\n{ error }' )
             exit( )
 
-    def loo_tabel( self, tabeli_nimi ):
+    def loo_tabel( self, tabeli_nimi: str ):
         if not tabeli_nimi in VAJALIKUD_TABELID:
             print( 'Tabeli nimi ei ole vajalike tabelite hulgas.' )
             exit( )
@@ -67,24 +65,24 @@ class Andmebaas:
 
     def uhenda( self ):
         log( f'{ self.kasutajanimi }({ len( self.parool ) }) uhendab andmebaasiga { self.andmebaas }({ self.host })' )
-        return connector.connect(
+        uhendus = connector.connect(
             user     = self.kasutajanimi,
             password = self.parool,
             host     = self.host,
             database = self.andmebaas,
         )
 
+        return uhendus
+
     @staticmethod
-    def leia( uhendus, tabel: str, vali: str, vaartus ) -> list:
+    def leia( uhendus, tabel: str, vali: str, vaartus: any ) -> list:
         otsija = uhendus.cursor( )
 
         log( f'Otsitakse { tabel }->{ vali } vaartust { vaartus }.' )
         data = {
-            'vali': vali,
-            'tabel': tabel,
             'vaartus': vaartus
         }
-        otsija.execute( f'SELECT %(vali)s FROM %(tabel)s WHERE %(vali)s = %(vaartus)s', data )
+        otsija.execute( f'SELECT * FROM `{ tabel }` WHERE `{ tabel }`.`{ vali }` = %(vaartus)s', data )
 
         leitud = otsija.fetchall( )
 
@@ -130,31 +128,54 @@ class Andmebaas:
             log( f'Vajalikud tabelid on juba loodud. { VAJALIKUD_TABELID }' )
             return [ ]
 
-    def kas_kasutaja_on_olemas( self, kasutajanimi ) -> bool:
+    def kas_kasutaja_on_olemas( self, kasutajanimi: str ) -> bool:
         uhendus = self.uhenda( )
 
-        leitud = self.leia( uhendus, 'kasutajad', 'kasutajanimi', kasutajanimi )
+        leitud = Andmebaas.leia( uhendus, 'kasutajad', 'kasutajanimi', kasutajanimi )
 
-        print( leitud )
+        uhendus.close( )
 
         return len( leitud ) == 1
 
-    def loo_kasutaja( self, kasutajanimi, plaintext_parool ) -> bool:
+    def leia_kasutaja_api_voti( self, kasutajanimi ) -> str:
+        # eeldame et kasutaja ON olemas ning kasutaja on juba sisse loginud
+        uhendus = self.uhenda( )
+
+        leitud = Andmebaas.leia( uhendus, 'kasutajad', 'kasutajanimi', kasutajanimi )
+
+        uhendus.close( )
+        print( leitud, leitud[ 0 ][ 2 ] )
+
+        return leitud[ 0 ][ 2 ]
+
+    def kas_api_voti_on_legaalne( self, api_voti ) -> [ bool, str ]:
+        uhendus = self.uhenda( )
+
+        leitud = Andmebaas.leia( uhendus, 'kasutajad', 'api_voti', api_voti )
+
+        uhendus.close( )
+
+        return [ len( leitud ) == 1, leitud[ 0 ][ 1 ] ]
+
+    def loo_kasutaja( self, kasutajanimi: str, plaintext_parool: str ) -> bool:
         # Eeldame, et kasutaja olemasolu on juba kontrollitud
         # Samuti on kontrollitud ka parooli tugevus
-        api_voti = bcrypt.gensalt( ).decode( 'utf-8' )
+        api_voti = Fernet.generate_key( )
 
-        md5 = hashlib.md5( )
-        md5.update( plaintext_parool.encode( 'utf-8' ) )
+        krupter = Fernet( api_voti )
 
-        parool = md5.hexdigest( )
+        parool = krupter.encrypt( plaintext_parool.encode( 'utf-8' ) )
 
         uhendus = self.uhenda( )
 
         sisestaja = uhendus.cursor( )
 
-        sisestaja.execute( 'INSERT INTO kasutajad ( kasutajanimi, parool, api_voti ) VALUES ( %s, %s, %s )', ( kasutajanimi, parool, api_voti ) )
+        sisestaja.execute( 'INSERT INTO kasutajad ( kasutajanimi, parool, api_voti ) VALUES ( %s, %s, %s )', ( kasutajanimi, parool, api_voti.decode( 'utf-8' ) ) )
+
+        uhendus.commit( )
+
         log( f'kasutaja { kasutajanimi } loodi edukalt' )
+
         uhendus.close( )
 
         return self.kas_kasutaja_on_olemas( kasutajanimi )

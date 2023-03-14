@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registreeri</title>
+</head>
+<body>
+    {% if veateade %}
+        <p>{{ veateade }}</p>
+    {% endif %}
+    <form action="/registreeri" method="post">
+        <input type="text" name="kasutajanimi" id="kasutajanimi" placeholder="Kasutajanimi">
+        <input type="password" name="parool" id="parool">
+        <button type="submit">registreeri</button>
+    </form>
+</body>
+</html>
