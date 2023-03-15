@@ -144,8 +144,11 @@ class Andmebaas:
         leitud = Andmebaas.leia( uhendus, 'kasutajad', 'kasutajanimi', kasutajanimi )
 
         uhendus.close( )
-        print( leitud, leitud[ 0 ][ 2 ] )
+        return leitud[ 0 ][ 3 ]
 
+    def leia_kasutaja_parool( self, kasutajanimi ) -> str:
+        uhendus = self.uhenda( )
+        leitud = Andmebaas.leia( uhendus, 'kasutajad', 'kasutajanimi', kasutajanimi )
         return leitud[ 0 ][ 2 ]
 
     def kas_api_voti_on_legaalne( self, api_voti ) -> [ bool, str ]:
@@ -154,13 +157,24 @@ class Andmebaas:
         leitud = Andmebaas.leia( uhendus, 'kasutajad', 'api_voti', api_voti )
 
         uhendus.close( )
+        on_olemas = len( leitud ) == 1
+        return [ on_olemas, leitud[ 0 ][ 3 ] if on_olemas else '' ]
 
-        return [ len( leitud ) == 1, leitud[ 0 ][ 1 ] ]
+    def kas_kasutaja_parool_kattub( self, kasutajanimi: str, plaintext_parool: str ) -> bool:
+        # eeldame et kasutaja olemasolu on juba vaadatud
+        api_voti = self.leia_kasutaja_api_voti( kasutajanimi ).encode( )
+        kruptitud_parool_salvestatud = self.leia_kasutaja_parool( kasutajanimi )
+        print( 'saadud voti: ', api_voti )
+
+        krupter = Fernet( api_voti )
+
+        return krupter.decrypt( kruptitud_parool_salvestatud ).decode( 'utf-8' ) == plaintext_parool
 
     def loo_kasutaja( self, kasutajanimi: str, plaintext_parool: str ) -> bool:
         # Eeldame, et kasutaja olemasolu on juba kontrollitud
         # Samuti on kontrollitud ka parooli tugevus
         api_voti = Fernet.generate_key( )
+        print( 'loodi voti: ', api_voti )
 
         krupter = Fernet( api_voti )
 

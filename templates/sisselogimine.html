@@ -8,11 +8,11 @@
     {% if kupsised['veateade'] %}
         <p>{{ kupsised['veateade'] }}</p>
     {% endif %}
-    <form action="/registreeri" method="post">
+    <form action="/sisselogimine" method="post">
         <input type="text" name="kasutajanimi" id="kasutajanimi" placeholder="Kasutajanimi">
         <input type="password" name="parool" id="parool">
-        <button type="submit">registreeri</button>
+        <button type="submit">logi sisse</button>
     </form>
-    <a href="sisselogimine"><button>logi sisse-></button></a>
+    <a href="registreeri"><button>registreeri-></button> </a>
 </body>
 </html>
