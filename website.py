@@ -1,17 +1,30 @@
-from sql import Andmebaas, log
+import os
+import uuid
+
+from sql import AndmebaasiSild, log
 from parooli_kontroll import kontrolli_parool
 
-from flask import Flask, request, render_template, redirect, url_for, make_response, Response
+from flask import Flask, request, render_template, redirect, url_for, make_response, Response, abort, escape, send_from_directory
+from werkzeug.utils import secure_filename
 
 Veebileht = Flask( __name__ )
-Andmebaas = Andmebaas( 'root', '', 'sharex_site', 'localhost' )
+Andmebaas = AndmebaasiSild( 'root', '', 'sharex_site', 'localhost' )
+
+PRAEGUNE_KAUST = os.path.dirname(os.path.abspath(__file__))
+ULESLAADIMISTE_KAUST = os.path.join( PRAEGUNE_KAUST, 'uleslaadimised' )
+AVALIKKUSE_TASEMED = {
+    'avalik': 0,
+    'privaatne': 2
+}
+
+LUBATUD_FAILITUUBID = [ 'IMAGE/PNG', 'IMAGE/GIF', 'IMAGE/JPEG', 'IMAGE/JPG' ]
 
 # Funktsioon, et kontrollida kas kasutaja on sisse logitud
 def on_sisse_logitud( ) -> list[ bool, str ]:
     api_voti = request.cookies.get( 'api_voti' )
     if api_voti is None:
         return [ False, '' ]
-    [ legaalne_voti, kasutajanimi ] = Andmebaas.kas_api_voti_on_legaalne( api_voti )
+    [ legaalne_voti, kasutajanimi, _ ] = Andmebaas.kas_api_voti_on_legaalne( api_voti )
     return [ legaalne_voti, kasutajanimi ]
 
 def leia_kupsised( ) -> dict:
@@ -35,8 +48,62 @@ def kustuta_kupsised( tagastus: Response ):
     print( 'kustutati koik kupsised' )
     return tagastus
 
+def lae_fail_ules( fail, kasutaja_id: int ) -> bool:
+    failinimi = fail.name
+    failituup = fail.content_type.upper( )
 
-# API route'id
+    korrastatud_failinimi = secure_filename( failinimi )
+
+    if not failituup in LUBATUD_FAILITUUBID:
+        return False
+
+    random_name = str( uuid.uuid4( ) )
+
+    api_voti = Andmebaas.leia_kasutaja_api_voti( kasutaja_id )
+
+    # tagastame True kui faili info loomine andmebaasis laks labi
+    fail_loodi_andmebaasis = Andmebaas.loo_fail( kasutaja_id, korrastatud_failinimi, random_name )
+
+    if not fail_loodi_andmebaasis:
+        return False
+
+    # kui kasutajal pole uleslaadimiste kausta, loome selle
+    kasutaja_kausta_path = os.path.join( ULESLAADIMISTE_KAUST, api_voti )
+    if not os.path.isdir( kasutaja_kausta_path ):
+        os.makedirs( kasutaja_kausta_path )
+
+    fail.save( os.path.join( kasutaja_kausta_path, random_name ) )
+    return True
+
+# Sharexi meediafailide vastuvotja
+@Veebileht.post( '/lae_ules' )
+def meediafailide_vastuvotja( ):
+    # https://getsharex.com/docs/custom-uploader
+    saadud_api_voti = request.headers.get( 'Authorization' )
+    [ on_olemas, _, kasutaja_id ] = Andmebaas.kas_api_voti_on_legaalne( saadud_api_voti )
+    print( on_olemas, kasutaja_id, saadud_api_voti  )
+    if not on_olemas:
+        log( f'API võtit "{ saadud_api_voti }" ei leitud.' )
+        abort( 400, 'API võtit ei leitud.' )
+
+    fail = request.files.get( 'file' )
+
+    if fail is None:
+        abort( 422, 'Faili ei leitud.' )
+
+    # faili_avalikkus = AVALIKKUSE_TASEMED['avalik']
+
+    fail_loodi = lae_fail_ules( fail, kasutaja_id )
+
+    if not fail_loodi:
+        abort( 422, 'Serveri error.' )
+
+    return {
+        'url': 'wowzers',
+        'kustutamis_url': 'wowzers2'
+    }
+
+
 @Veebileht.post( '/registreeri' ) # Lubame ainult POST requestid
 def api_registreeri( ):
     lehele_saadetud_info = request.form
@@ -95,10 +162,9 @@ def api_login( ):
 
     return kupsiste_haldaja
 
-
 @Veebileht.get( '/sisselogimine' )
 def sisselogimine( ):
-    [ sisselogitud, kasutajanimi ] = on_sisse_logitud( )
+    [ sisselogitud, _ ] = on_sisse_logitud( )
 
     if sisselogitud:
         tagastus = make_response( redirect( url_for( 'index' ) ) )
@@ -111,7 +177,7 @@ def sisselogimine( ):
 
 @Veebileht.get( '/registreeri' )
 def registreeri( ):
-    [ sisselogitud, kasutajanimi ] = on_sisse_logitud( )
+    [ sisselogitud, _ ] = on_sisse_logitud( )
 
     if sisselogitud:
         return redirect( url_for( 'index' ) )
@@ -122,7 +188,7 @@ def registreeri( ):
 
 @Veebileht.get( '/' )
 def index( ):
-    [ sisselogitud, kasutajanimi ] = on_sisse_logitud( )
+    [ sisselogitud, _ ] = on_sisse_logitud( )
 
     if not sisselogitud:
         tagastus = make_response( redirect( url_for( 'sisselogimine' ) ) )
@@ -131,6 +197,49 @@ def index( ):
 
     kupsised = leia_kupsised( )
     return render_template( 'index.html', kupsised=kupsised )
+
+@Veebileht.get( '/sharexi_konfiguratsioon' )
+def tagasta_sharexi_config( ):
+    [ sisse_logitud, kasutajanimi ] = on_sisse_logitud( )
+    if not sisse_logitud:
+        tagastus = make_response( redirect( url_for( 'logi_valja' ) ) )
+        tagastus = kustuta_kupsised( tagastus )
+        return tagastus
+
+    return {
+        "Name": "awawawawawaw lahe uploader!!!!",
+        "DestinationType": "ImageUploader, TextUploader, FileUploader",
+        "RequestMethod": "POST",
+        "RequestURL": "http://127.0.0.1:5000" + url_for( 'meediafailide_vastuvotja' ),
+        "Headers": {
+            "Authorization": Andmebaas.leia_kasutaja_api_voti( kasutajanimi )
+        },
+        "Body": "MultipartFormData",
+        "FileFormName": "file",
+        "URL": "$json:tagastatud_url",
+        "ThumbnailURL": "$json:esipilt$",
+        "Error": "$json:veateade$"
+    }
+
+@Veebileht.get( '/fail/<string:eriline_faili_nimi>' )
+def failikuvaja( eriline_faili_nimi: str ):
+    # Siin pole vaja vaadata kas kasutaja on sisse logitud sest praegu saavad pilte vaadata ukskoik kellel on pildi link
+    faili_unikaalne_nimi = escape( eriline_faili_nimi )
+    faili_id = Andmebaas.leia_faili_id( faili_unikaalne_nimi )
+
+    if faili_id == -1:
+        return 'Faili ei leitud.'
+
+    kasutaja_id = Andmebaas.leia_uleslaetud_faili_kasutaja_id( faili_id )
+    if kasutaja_id == -1:
+        return 'Faili ei leitud'
+
+    kasutaja_api_voti = Andmebaas.leia_kasutaja_api_voti( kasutaja_id )
+
+    faili_tuup = Andmebaas.leia_faili_nimi( faili_id ).split( '.' )[ -1 ]
+    faili_asukoht = os.path.join( kasutaja_api_voti, faili_unikaalne_nimi )
+
+    return send_from_directory( ULESLAADIMISTE_KAUST, faili_asukoht )
 
 @Veebileht.route( '/logout' )
 def logi_valja( ):
