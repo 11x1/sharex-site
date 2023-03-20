@@ -4,14 +4,14 @@ import uuid
 from sql import AndmebaasiSild, log
 from parooli_kontroll import kontrolli_parool
 
-from flask import Flask, request, render_template, redirect, url_for, make_response, Response, abort, escape, send_from_directory
+from flask import Flask, request, render_template, redirect, url_for, make_response, Response, abort, escape, send_from_directory, jsonify
 from werkzeug.utils import secure_filename
 
 Veebileht = Flask( __name__ )
 Andmebaas = AndmebaasiSild( 'root', '', 'sharex_site', 'localhost' )
 
 PRAEGUNE_KAUST = os.path.dirname(os.path.abspath(__file__))
-ULESLAADIMISTE_KAUST = os.path.join( PRAEGUNE_KAUST, 'uleslaadimised' )
+ULESLAADIMISTE_KAUST = os.path.join( PRAEGUNE_KAUST, 'uleslaadimised' ) + '/'
 AVALIKKUSE_TASEMED = {
     'avalik': 0,
     'privaatne': 2
@@ -36,6 +36,7 @@ def leia_kupsised( ) -> dict:
 
     return tagastatavad_kupsised
 
+# 🐷🍪
 def sea_kupsis( tagastus: Response, nimi: str, vaartus: any ):
     tagastus.set_cookie( nimi, vaartus )
     log( f'kupsise uus vaartus { nimi }->{ vaartus }' )
@@ -48,32 +49,35 @@ def kustuta_kupsised( tagastus: Response ):
     print( 'kustutati koik kupsised' )
     return tagastus
 
-def lae_fail_ules( fail, kasutaja_id: int ) -> bool:
+def lae_fail_ules( fail, kasutaja_id: int ) -> dict:
     failinimi = fail.name
-    failituup = fail.content_type.upper( )
+    failituup = fail.content_type
 
     korrastatud_failinimi = secure_filename( failinimi )
 
-    if not failituup in LUBATUD_FAILITUUBID:
-        return False
+    if not failituup.upper( ) in LUBATUD_FAILITUUBID:
+        return { 'laeti_ules': False }
 
-    random_name = str( uuid.uuid4( ) )
+    failituup = failituup.replace( 'image/', '' ) # korrastame failituubu salvestamise viisi
+    # salvestatakse png/jpeg/mp4 vms
+
+    eriline_nimi = str( uuid.uuid4( ) )
 
     api_voti = Andmebaas.leia_kasutaja_api_voti( kasutaja_id )
 
     # tagastame True kui faili info loomine andmebaasis laks labi
-    fail_loodi_andmebaasis = Andmebaas.loo_fail( kasutaja_id, korrastatud_failinimi, random_name )
+    fail_loodi_andmebaasis = Andmebaas.loo_fail( kasutaja_id, korrastatud_failinimi, failituup, eriline_nimi )
 
     if not fail_loodi_andmebaasis:
-        return False
+        return { 'laeti_ules': False }
 
     # kui kasutajal pole uleslaadimiste kausta, loome selle
     kasutaja_kausta_path = os.path.join( ULESLAADIMISTE_KAUST, api_voti )
     if not os.path.isdir( kasutaja_kausta_path ):
         os.makedirs( kasutaja_kausta_path )
 
-    fail.save( os.path.join( kasutaja_kausta_path, random_name ) )
-    return True
+    fail.save( os.path.join( kasutaja_kausta_path, eriline_nimi + f'.{ failituup }' ) )
+    return { 'laeti_ules': True, 'url': 'http://127.0.0.1:5000/fail/' + eriline_nimi  }
 
 # Sharexi meediafailide vastuvotja
 @Veebileht.post( '/lae_ules' )
@@ -93,15 +97,13 @@ def meediafailide_vastuvotja( ):
 
     # faili_avalikkus = AVALIKKUSE_TASEMED['avalik']
 
-    fail_loodi = lae_fail_ules( fail, kasutaja_id )
+    uleslaadimine = lae_fail_ules( fail, kasutaja_id )
 
-    if not fail_loodi:
+    if not uleslaadimine.get( 'laeti_ules' ):
         abort( 422, 'Serveri error.' )
 
-    return {
-        'url': 'wowzers',
-        'kustutamis_url': 'wowzers2'
-    }
+    print( uleslaadimine.get( 'url' ) )
+    return jsonify( url=uleslaadimine.get( 'url' ) )
 
 
 @Veebileht.post( '/registreeri' ) # Lubame ainult POST requestid
@@ -216,7 +218,7 @@ def tagasta_sharexi_config( ):
         },
         "Body": "MultipartFormData",
         "FileFormName": "file",
-        "URL": "$json:tagastatud_url",
+        "URL": "$json:url",
         "ThumbnailURL": "$json:esipilt$",
         "Error": "$json:veateade$"
     }
@@ -225,7 +227,8 @@ def tagasta_sharexi_config( ):
 def failikuvaja( eriline_faili_nimi: str ):
     # Siin pole vaja vaadata kas kasutaja on sisse logitud sest praegu saavad pilte vaadata ukskoik kellel on pildi link
     faili_unikaalne_nimi = escape( eriline_faili_nimi )
-    faili_id = Andmebaas.leia_faili_id( faili_unikaalne_nimi )
+    print( str( faili_unikaalne_nimi ) )
+    faili_id = Andmebaas.leia_faili_id( str( faili_unikaalne_nimi ) )
 
     if faili_id == -1:
         return 'Faili ei leitud.'
@@ -236,10 +239,9 @@ def failikuvaja( eriline_faili_nimi: str ):
 
     kasutaja_api_voti = Andmebaas.leia_kasutaja_api_voti( kasutaja_id )
 
-    faili_tuup = Andmebaas.leia_faili_nimi( faili_id ).split( '.' )[ -1 ]
-    faili_asukoht = os.path.join( kasutaja_api_voti, faili_unikaalne_nimi )
+    faili_tuup = Andmebaas.leia_faili_tuup( faili_id )
 
-    return send_from_directory( ULESLAADIMISTE_KAUST, faili_asukoht )
+    return send_from_directory( os.path.join( ULESLAADIMISTE_KAUST, kasutaja_api_voti ),  f'{ eriline_faili_nimi }.{ faili_tuup }' )
 
 @Veebileht.route( '/logout' )
 def logi_valja( ):

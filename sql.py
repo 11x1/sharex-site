@@ -10,7 +10,7 @@ VAJALIKUD_TABELID = [ 'kasutajad', 'uleslaadimised', 'failid' ]
 LOO_TABEL = {
     "kasutajad": "CREATE TABLE kasutajad ( id serial primary key not null, kasutajanimi varchar( 32 ) not null, parool varchar( 256 ) not null, api_voti varchar( 128 ) not null )",
     "uleslaadimised": "CREATE TABLE uleslaadimised ( kasutaja_id int not null, faili_id int not null )",
-    "failid": "CREATE TABLE failid ( id serial primary key not null, nimi varchar( 128 ) not null, unikaalne_nimi varchar( 128 ) not null )"
+    "failid": "CREATE TABLE failid ( id serial primary key not null, nimi varchar( 128 ) not null, unikaalne_nimi varchar( 128 ) not null, failituup varchar( 32 ) not null )"
 }
 
 class AndmebaasiSild:
@@ -173,6 +173,15 @@ class AndmebaasiSild:
             return ''
         return leitud[ 0 ][ 1 ]
 
+    def leia_faili_tuup( self, faili_id: int ) -> str:
+        uhendus = self.uhenda( )
+        leitud = AndmebaasiSild.leia( uhendus, 'failid', 'id', faili_id )
+        uhendus.close( )
+
+        if len( leitud ) == 0:
+            return ''
+        return leitud[ 0 ][ 3 ]
+
     def leia_uleslaetud_faili_kasutaja_id( self, faili_id ) -> int:
         uhendus = self.uhenda( )
 
@@ -226,12 +235,15 @@ class AndmebaasiSild:
 
         return self.kas_kasutaja_on_olemas( kasutajanimi )
 
-    def loo_fail( self, kasutaja_id: int, failinimi: str, unikaalne_nimi: str ) -> bool:
+    def loo_fail( self, kasutaja_id: int, failinimi: str, failituup: str, unikaalne_nimi: str ) -> bool:
         # Eeldame, et failinimi on ule vaadatud
         uhendus = self.uhenda( )
 
+        if len( failituup ) > 32 or len( failinimi ) > 128 or len( unikaalne_nimi ) > 128:
+            return False
+
         sisestaja = uhendus.cursor( )
-        sisestaja.execute( "INSERT INTO failid ( nimi, unikaalne_nimi ) VALUES( %s, %s )", ( failinimi, unikaalne_nimi ) )
+        sisestaja.execute( "INSERT INTO failid ( nimi, unikaalne_nimi, failituup ) VALUES( %s, %s, %s )", ( failinimi, unikaalne_nimi, failituup ) )
         uhendus.commit( )
 
         faili_id = self.leia_faili_id( unikaalne_nimi )
