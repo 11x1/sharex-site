@@ -5,11 +5,21 @@
     <title>Title</title>
 </head>
 <body>
-  {% if kupsised %}
+    {% if kupsised %}
     {{ kupsised }}
-  {% endif %}
+    {% endif %}
 
-  <a href="/sharexi_konfiguratsioon" download="config.sxcu"><button>lae alla sharexi cfg</button></a>
-  <a href="/logout"><button>logi valja</button></a>
+    <a href="/sharexi_konfiguratsioon" download="config.sxcu"><button>lae alla sharexi cfg</button></a>
+    <a href="/logout"><button>logi valja</button></a>
+
+    {% if meediafailid %}
+    <div id="failid">
+        {% for fail in meediafailid %}
+            <img src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
+            <p>{{ fail.nimi }}.{{ fail.tuup }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
 </body>
 </html>

@@ -169,17 +169,21 @@ def api_registreeri( ):
 @Veebileht.post( '/sisselogimine' )
 def api_login( ):
     lehele_saadetud_info = request.form
+    parool = lehele_saadetud_info[ 'parool' ]
+    kupsiste_haldaja = make_response( redirect( url_for( 'sisselogimine' ) ) )
+
+    [ kas_parool_taidab_nouded, _ ] = kontrolli_parool( parool )
+    if not kas_parool_taidab_nouded:
+        kupsiste_haldaja = sea_kupsis( kupsiste_haldaja, 'veateade', 'Parool ei täida nõudeid..' )
+        return kupsiste_haldaja
 
     kasutajanimi = lehele_saadetud_info[ 'kasutajanimi' ].lower( )
     leitud_kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'nimi' ], kasutajanimi )
     print( kasutajanimi, leitud_kasutaja )
-    kupsiste_haldaja = make_response( redirect( url_for( 'sisselogimine' ) ) )
 
     if leitud_kasutaja.on_tuhi( ):
         kupsiste_haldaja = sea_kupsis( kupsiste_haldaja, 'veateade', 'Kasutajanime ei ole olemas.' )
         return kupsiste_haldaja
-
-    parool = lehele_saadetud_info[ 'parool' ]
 
     kas_parool_kattub = leitud_kasutaja.parool_kattub( parool )
 
@@ -209,7 +213,12 @@ def registreeri( ):
 @Veebileht.get( '/' )
 def index( ):
     kupsised = leia_kupsised( )
-    return render_template( 'index.html', kupsised=kupsised )
+
+    kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], kupsised.get( 'api_voti' ) )
+
+    meediafailid = Andmebaas.leia_kasutaja_failid( kasutaja, 0, 12 )
+
+    return render_template( 'index.html', kupsised=kupsised, meediafailid=meediafailid )
 
 @peab_olema_sisse_logitud
 @Veebileht.get( '/sharexi_konfiguratsioon' )

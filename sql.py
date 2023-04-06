@@ -142,6 +142,8 @@ class AndmebaasiSild:
     # tagastab ainult ühe välja
     def leia_uks( self, tabel: str, vali: str, vaartus: any ) -> tuple:
         leitud = self.leia( tabel, vali, vaartus )
+        if len( leitud ) == 0:
+            return ( )
         return leitud[ 0 ]
 
     def andmebaas_on_olemas( self ) -> bool:
@@ -189,6 +191,9 @@ class AndmebaasiSild:
 
         leitud = self.leia_uks( TABELI_NIMI[ 'kasutajad' ], millega, leitav_vaartus )
 
+        if leitud == ( ):
+            return TUHI_KASUTAJA
+
         return Kasutaja( leitud[ INDEKSID[ 'kasutaja_id' ] ],
                          leitud[ INDEKSID[ 'kasutajanimi' ] ],
                          leitud[ INDEKSID[ 'api_voti' ] ],
@@ -215,6 +220,24 @@ class AndmebaasiSild:
         kasutaja = self.leia_kasutaja( LEIA_KASUTAJA[ 'id' ], kasutaja_id )
 
         return kasutaja
+
+    def leia_kasutaja_failid( self, kasutaja: Kasutaja, start: int, limiit: int ):
+        leitud = self.leia( TABELI_NIMI[ 'uleslaadimised' ], 'kasutaja_id', kasutaja.id )
+
+        failid = [ ]
+        for faili_info in leitud:
+            faili_id = faili_info[ INDEKSID[ 'faili_id' ] ]
+            fail = self.leia_fail( LEIA_FAIL[ 'id' ], faili_id )
+            if fail != TUHI_FAIL:
+                failid.append( fail )
+
+        n_faile = len( failid )
+        if start > n_faile:
+            return [ TUHI_FAIL ]
+        if start + limiit > n_faile:
+            limiit = n_faile - start
+
+        return failid[ start:limiit ]
 
     def kas_api_voti_on_legaalne( self, api_voti: str ) -> bool:
         leitud = self.leia( 'kasutajad', 'api_voti', api_voti )
