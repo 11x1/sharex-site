@@ -1,18 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Registreeri</title>
-</head>
-<body>
-    {% if kupsised['veateade'] %}
-        <p>{{ kupsised['veateade'] }}</p>
-    {% endif %}
-    <form action="/registreeri" method="post">
+{% extends 'sisestamine_baas.html' %}
+
+{% block lehenimi %}
+Registreeri
+{% endblock %}
+
+{% block stiilid %}
+<link rel="stylesheet" type="text/css" href="../static/styles/sisestamine.css">
+{% endblock %}
+
+
+{% block sisestamine %}
+<form action="/registreeri" method="post">
+    <div class="valjad">
         <input type="text" name="kasutajanimi" id="kasutajanimi" placeholder="Kasutajanimi">
         <input type="password" name="parool" id="parool">
-        <button type="submit">registreeri</button>
-    </form>
+    </div>
+
+    <button type="submit">registreeri</button>
+</form>
+{% endblock %}
+
+{% block lisad %}
+<div class="lisanupp">
     <a href="sisselogimine"><button>logi sisse-></button></a>
-</body>
-</html>
+</div>
+{% endblock %}

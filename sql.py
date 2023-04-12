@@ -231,6 +231,8 @@ class AndmebaasiSild:
             if fail != TUHI_FAIL:
                 failid.append( fail )
 
+        failid = failid[ ::-1 ]
+
         n_faile = len( failid )
         if start > n_faile:
             return [ TUHI_FAIL ]

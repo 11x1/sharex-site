@@ -1,0 +1,90 @@
+#leht {
+    max-width: 1200px;
+}
+
+#kaardid {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax( 100px, 300px ) );
+
+    gap: 10px;
+
+    justify-content: center;
+
+    padding: 10px;
+
+    font-family: helvetica, sans-serif;
+}
+
+.kaart {
+    padding: 10px;
+
+    border: 3px var( --peamine ) solid;
+    border-radius: var( --umardus );
+
+    background: var( --taust-peamine );
+}
+
+.kaart form {
+    display: flex;
+    flex-direction: column;
+
+    min-height: 100%;
+    flex: 1 1 auto;
+}
+
+.kaart .valjad {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+}
+
+.kaart .valjad input {
+    border: none;
+    background: transparent;
+
+    font-size: 1.2rem;
+    color: var( --tekst );
+
+    border-bottom: var( --peamine-hele ) solid 2px;
+}
+
+.kaart .nupud {
+    display: flex;
+    flex-direction: row-reverse;
+
+    gap: 10px;
+
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+.kaart .nupud button {
+    border: var( --aaris_kaart ) 1px solid;
+    border-radius: calc( var( --umardus ) / 2 );
+    background: var( --taust_kaart );
+    color: var( --tekst_kaart );
+    padding: 5px 10px;
+}
+
+.failikaart img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+
+    border-radius: calc( var( --umardus ) / 2 );
+
+    transition-duration: 200ms;
+}
+
+.failikaart img:hover {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+
+    filter: blur( 1px );
+}
+
+.failikaart .nimi {
+    color: var( --peamine-hele );
+}

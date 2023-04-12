@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block lehenimi %}{% endblock %}</title>
+
+    <link rel="stylesheet" type="text/css" href="../static/styles/baas.css">
+    {% block stiilid %}{% endblock %}
+</head>
+<body>
+  <div id="leht">
+      {% if kupsised['veateade'] %}
+          <div class="veateade">
+              <p>{{ kupsised['veateade'] }}</p>
+          </div>
+      {% endif %}
+
+      {% block sisestamine %} {% endblock %}
+
+      {% block lisad %}{% endblock %}
+    </div>
+</body>
+</html>

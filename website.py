@@ -9,7 +9,6 @@ from werkzeug.utils import secure_filename
 from sql import AndmebaasiSild, log, LEIA_KASUTAJA, LEIA_FAIL
 from parooli_kontroll import kontrolli_parool
 from kasutaja import Kasutaja
-from fail import Fail
 
 Veebileht = Flask( __name__ )
 Andmebaas = AndmebaasiSild( 'root', '', 'sharex_site', 'localhost' )
@@ -143,8 +142,8 @@ def api_registreeri( ):
     kasutaja_on_olemas = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'nimi' ], kasutajanimi )
 
     tagastus = make_response( redirect( url_for( 'registreeri' ) ) )
-
-    if kasutaja_on_olemas:
+    print( kasutaja_on_olemas )
+    if not kasutaja_on_olemas.on_tuhi( ):
         tagastus = sea_kupsis( tagastus, 'veateade', 'Kasutajanimi on olemas.' )
         return tagastus
 
@@ -161,6 +160,7 @@ def api_registreeri( ):
         tagastus = sea_kupsis( tagastus, 'veateade', 'Kasutaja loomisel esines viga.' )
         return tagastus
 
+    tagastus = make_response( redirect( url_for( 'sisselogimine' ) ) )
     tagastus = sea_kupsis( tagastus, 'veateade', '' )
     tagastus = sea_kupsis( tagastus, 'api_voti', loodud_kasutaja.api_voti )
 
@@ -174,7 +174,7 @@ def api_login( ):
 
     [ kas_parool_taidab_nouded, _ ] = kontrolli_parool( parool )
     if not kas_parool_taidab_nouded:
-        kupsiste_haldaja = sea_kupsis( kupsiste_haldaja, 'veateade', 'Parool ei täida nõudeid..' )
+        kupsiste_haldaja = sea_kupsis( kupsiste_haldaja, 'veateade', 'Parool ei täida nõudeid.' )
         return kupsiste_haldaja
 
     kasutajanimi = lehele_saadetud_info[ 'kasutajanimi' ].lower( )
@@ -210,15 +210,21 @@ def registreeri( ):
     return render_template( 'registreeri.html', kupsised=kupsised )
 
 @peab_olema_sisse_logitud
-@Veebileht.get( '/' )
-def index( ):
+@Veebileht.get( '/kodu/<int:lehe_number>', defaults={ 'lehe_number': 1 } )
+def index( lehe_number: int ):
     kupsised = leia_kupsised( )
 
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], kupsised.get( 'api_voti' ) )
 
-    meediafailid = Andmebaas.leia_kasutaja_failid( kasutaja, 0, 12 )
+    algus = ( lehe_number - 1 ) * 12
+    limiit = 12
 
-    return render_template( 'index.html', kupsised=kupsised, meediafailid=meediafailid )
+    meediafailid = Andmebaas.leia_kasutaja_failid( kasutaja, algus, limiit )
+
+    return render_template( 'index.html',
+                            kupsised=kupsised,
+                            meediafailid=meediafailid,
+                            lehenumber=lehe_number )
 
 @peab_olema_sisse_logitud
 @Veebileht.get( '/sharexi_konfiguratsioon' )

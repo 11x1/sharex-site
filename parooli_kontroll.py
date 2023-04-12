@@ -1,4 +1,4 @@
-def kontrolli_parool( parool: str ) -> list[ bool, str ]:
+def kontrolli_parool( parool: str ) -> list:
     # Tugeva parooli kontroll
     # >8 pikkune
     # 1 Suur taht

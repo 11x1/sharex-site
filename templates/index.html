@@ -2,24 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+
+    <title>Koduleht - leht {{ lehenumber }}</title>
+    <link rel="stylesheet" type="text/css" href="../static/styles/baas.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/koduleht.css">
 </head>
 <body>
-    {% if kupsised %}
-    {{ kupsised }}
-    {% endif %}
+    <div id="leht">
+        {% if kupsised %}
+        {{ kupsised }}
+        {% endif %}
 
-    <a href="/sharexi_konfiguratsioon" download="config.sxcu"><button>lae alla sharexi cfg</button></a>
-    <a href="/logout"><button>logi valja</button></a>
+        <a href="/sharexi_konfiguratsioon" download="config.sxcu"><button>lae alla sharexi cfg</button></a>
+        <a href="/logout"><button>logi valja</button></a>
 
-    {% if meediafailid %}
-    <div id="failid">
-        {% for fail in meediafailid %}
-            <img src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
-            <p>{{ fail.nimi }}.{{ fail.tuup }}</p>
-        {% endfor %}
+        {% if meediafailid %}
+        <div id="kaardid">
+            <div class="kaart">
+                <form action="/otsi" method="post">
+                    <div class="valjad">
+                        <input type="text" name="faili_osaline_nimi" id="faili_osaline_nimi" placeholder="Failinimi">
+                        <input type="text" name="sildid" id="sildid" placeholder="Sildid">
+                    </div>
+                    <div class="tuup">
+                        <p>Tüüp</p>
+                        <!-- TODO: type selection, vt. disain.pdf(3) -->
+                    </div>
+                    <div class="nupud">
+                        <button type="submit" style="--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst );">Otsi</button>
+                        <button type="reset" style="--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --taust-tavaline ) ">Tühjenda</button>
+                    </div>
+                </form>
+            </div>
+
+            {% for fail in meediafailid %}
+                <div class="kaart failikaart">
+                    <a href="/fail/{{ fail.unikaalne_nimi }}">
+                        <img src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
+                    </a>
+                    <p class="nimi">{{ fail.nimi }}.{{ fail.tuup }}</p>
+                    <div class="sildid-ja-nupud">
+                        <div class="sildid">
+
+                        </div>
+                        <div class="nupud">
+                            <button  style="--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --taust-tavaline )">B</button>
+                            <button style="--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst );">A</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
-
 </body>
 </html>
