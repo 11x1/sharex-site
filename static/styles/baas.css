@@ -1,0 +1,21 @@
+* {
+    --peamine: #5555ff;
+    --peamine-hele: #6666ff;
+    --viga: red;
+
+    --taust-peamine: #5555ff40;
+    --taust-peamine-hele: #7777ff60;
+    --taust-viga: #ff000040;
+    --taust-tavaline: #3d3d3d;
+
+    --umardus: 20px;
+    --hagusus: 20px;
+
+    --tekst: #dddddd;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var( --taust-tavaline );
+}

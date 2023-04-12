@@ -1,0 +1,109 @@
+body {
+    background: url( "https://source.unsplash.com/featured/500x500" );
+    background-size: cover;
+}
+
+::placeholder {
+    color: var( --tekst );
+    opacity: 0.7;
+}
+
+#leht {
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.veateade {
+    position: static;
+    border: var( --viga ) solid 2px;
+    border-radius: var( --umardus );
+
+    background: var( --taust-viga );
+
+    text-align: center;
+    backdrop-filter: blur( var( --hagusus ) );
+
+    padding: 0 10px;
+    margin: 20px 0;
+}
+
+.veateade p {
+    color: var( --tekst );
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+
+    padding: 10px;
+
+    border: 3px var( --peamine ) solid;
+    border-radius: var( --umardus );
+
+    background: var( --taust-peamine );
+    backdrop-filter: blur( var( --hagusus ) );
+
+    gap: 10px;
+}
+
+form div.valjad {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+form input {
+    border: 2px var( --peamine ) solid;
+    border-radius: calc( var( --umardus ) / 2) ;
+
+    background: var( --taust-peamine );
+    height: 20px;
+
+    color: var( --tekst );
+
+    padding: 5px;
+
+    transition-duration: 200ms;
+}
+
+form input:focus {
+    color: white;
+}
+
+form input:nth-child( 1 ) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+form input:nth-child( 2 ) {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+form button,
+div.lisanupp button {
+    border: 2px var( --peamine ) solid;
+    border-radius: calc( var( --umardus ) / 2);
+
+    background: var( --taust-peamine );
+
+    transition-duration: 200ms;
+
+    color: var( --tekst );
+    opacity: 0.8;
+}
+
+form button:hover,
+div.lisanupp button:hover  {
+    border: 2px var(--peamine-hele) solid;
+    background: var(--taust-peamine-hele);
+}
+
+.lisanupp {
+    margin-top: 20px;
+}
