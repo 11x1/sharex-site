@@ -65,9 +65,21 @@
     background: var( --taust_kaart );
     color: var( --tekst_kaart );
     padding: 5px 10px;
+    width: min-content;
 }
 
-.failikaart img {
+.kaart .nupud form {
+    max-width: fit-content;
+}
+
+.kaart .nupud button img {
+    width: 15px;
+    aspect-ratio: 4 / 4;
+
+    margin-top: 2px;
+}
+
+.failikaart img.esituspilt {
     width: 100%;
     height: 150px;
     object-fit: cover;
@@ -77,7 +89,7 @@
     transition-duration: 200ms;
 }
 
-.failikaart img:hover {
+.failikaart img.esituspilt:hover {
     width: 100%;
     height: 150px;
     object-fit: cover;

@@ -1,0 +1,30 @@
+#kontrollpaneel {
+    position: sticky;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: end;
+    gap: 10px;
+
+    margin-right: 20px;
+    top: 0;
+}
+
+#kontrollpaneel button {
+    border: 2px var( --peamine ) solid;
+    padding: 5px 10px;
+
+    background: var( --taust-peamine );
+
+    border-radius: var( --umardus );
+
+    filter: saturate( 0.3 );
+    transition-duration: 200ms;
+
+    color: var( --tekst );
+}
+
+#kontrollpaneel button:hover {
+    filter: saturate( 1 );
+}

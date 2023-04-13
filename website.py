@@ -267,11 +267,46 @@ def failikuvaja( eriline_faili_nimi: str ):
 
     return send_from_directory( os.path.join( ULESLAADIMISTE_KAUST, kasutaja_api_voti ),  f'{ eriline_faili_nimi }.{ faili_tuup }' )
 
+@peab_olema_sisse_logitud
+@Veebileht.post( '/kustuta_fail/' )  # Saaks teah samamoodi nagu on /kustuta_veateade aga
+def kustuta_fail( ):
+    eriline_faili_nimi = request.form.get( 'faili_eriline_nimi' )
+    faili_eriline_nimi = escape( eriline_faili_nimi )
+
+    saadud_api_voti = request.form.get( 'api_voti' ) + '09'
+
+    fail = Andmebaas.leia_fail( LEIA_FAIL[ 'unikaalne_nimi' ], str( faili_eriline_nimi ) )
+
+    if fail.on_tuhi( ):
+        return make_response( 'Faili ei leitud.' )
+
+    uleslaetud_faili_kasutaja = Andmebaas.leia_uleslaetud_faili_kasutaja( fail )
+
+    log( f'{ uleslaetud_faili_kasutaja.api_voti } & { saadud_api_voti }' )
+    if uleslaetud_faili_kasutaja.on_tuhi( ) or uleslaetud_faili_kasutaja.api_voti != saadud_api_voti:
+        return make_response( 'Te ei ole faili omanik.' )
+
+    kas_fail_kustutati = Andmebaas.kustuta_fail( fail )
+    if not kas_fail_kustutati:
+        return make_response( 'Faili ei saanud kustutada.' )
+
+    return make_response( 'Fail kustutatud.' )
+
 @Veebileht.route( '/logout' )
 def logi_valja( ):
     kupsiste_haldaja = make_response( redirect( url_for( 'sisselogimine' ) ) )
     kupsiste_haldaja = kustuta_kupsised( kupsiste_haldaja )
     return kupsiste_haldaja
+
+@Veebileht.get( '/kustuta_veateade' )
+def kustuta_veateade( ):
+    tagastus = make_response( 'Veateade kustutatud.' )
+    tagastus = sea_kupsis( tagastus, 'veateade', '' )
+    return tagastus
+
+@Veebileht.route( '/' )  # juhul kui kasutaja satub baaslehele siis saadame kasutaja kodulehele
+def kodulehele( ):
+    return redirect( url_for( 'index', lehe_number=1 ) )
 
 if __name__ == "__main__":
     Veebileht.run( debug=True )

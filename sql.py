@@ -1,3 +1,5 @@
+import os
+
 from cryptography.fernet import Fernet
 from mysql import connector
 from mysql.connector import errorcode # https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
@@ -5,6 +7,9 @@ from mysql.connector import errorcode # https://dev.mysql.com/doc/connector-pyth
 import debug
 from kasutaja import Kasutaja
 from fail import Fail
+
+PRAEGUNE_KAUST = os.path.dirname(os.path.abspath(__file__))
+ULESLAADIMISTE_KAUST = os.path.join( PRAEGUNE_KAUST, 'uleslaadimised' ) + '/'
 
 Logija = debug.Logija( )
 log = Logija.log
@@ -287,6 +292,32 @@ class AndmebaasiSild:
         sisestaja.execute( "INSERT INTO uleslaadimised ( kasutaja_id, faili_id ) VALUES( %s, %s )", ( kasutaja.id, fail.id ) )
         uhendus.commit( )
         uhendus.close( )
+        return True
+
+    def kustuta_fail( self, fail ) -> bool:
+        uhendus = self.uhenda( )
+        kustutaja = uhendus.cursor( )
+        log( 'kustutatakse kasutajat' )
+        if fail == TUHI_FAIL:
+            log( 'fail on tuhi' )
+            return False
+
+        kasutaja_id = self.leia_uks( TABELI_NIMI[ 'uleslaadimised' ], 'faili_id', fail.id )[ INDEKSID[ 'kasutaja_id' ] ]
+        kasutaja = self.leia_kasutaja( LEIA_KASUTAJA[ 'id' ], kasutaja_id )
+
+        if kasutaja == TUHI_KASUTAJA:
+            log( 'kasutajat pole' )
+            return False
+
+        kustutaja.execute( f"DELETE FROM { TABELI_NIMI[ 'uleslaadimised' ] } WHERE faili_id = %(faili_id)s", { 'faili_id': fail.id } )
+        kustutaja.execute( f"DELETE FROM { TABELI_NIMI[ 'failid' ] } WHERE { LEIA_FAIL[ 'unikaalne_nimi' ] } = %(faili_unikaalne_nimi)s", { 'faili_unikaalne_nimi': fail.unikaalne_nimi } )
+
+        os.remove( os.path.join( ULESLAADIMISTE_KAUST, kasutaja.api_voti, f"{ fail.unikaalne_nimi }.{ fail.tuup }" ) )
+
+        uhendus.commit( )
+        uhendus.close( )
+        log( f'fail { fail } kustutati edukalt' )
+
         return True
 
     def kuva_kasutajad( self ) -> None:

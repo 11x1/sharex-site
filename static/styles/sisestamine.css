@@ -17,24 +17,6 @@ body {
     align-items: center;
 }
 
-.veateade {
-    position: static;
-    border: var( --viga ) solid 2px;
-    border-radius: var( --umardus );
-
-    background: var( --taust-viga );
-
-    text-align: center;
-    backdrop-filter: blur( var( --hagusus ) );
-
-    padding: 0 10px;
-    margin: 20px 0;
-}
-
-.veateade p {
-    color: var( --tekst );
-}
-
 form {
     display: flex;
     flex-direction: column;

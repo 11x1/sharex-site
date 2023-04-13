@@ -6,17 +6,26 @@
     <title>Koduleht - leht {{ lehenumber }}</title>
     <link rel="stylesheet" type="text/css" href="../static/styles/baas.css">
     <link rel="stylesheet" type="text/css" href="../static/styles/koduleht.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/kontrollpaneel.css">
 </head>
 <body>
-    <div id="leht">
+    <div id="kontrollpaneel">
         {% if kupsised %}
         {{ kupsised }}
         {% endif %}
 
         <a href="/sharexi_konfiguratsioon" download="config.sxcu"><button>lae alla sharexi cfg</button></a>
         <a href="/logout"><button>logi valja</button></a>
-
-        {% if meediafailid %}
+    </div>
+    <div id="leht">
+        {% if kupsised[ 'veateade' ] %}
+            <div class="veateade">
+                <p>{{ kupsised['veateade'] }}</p>
+                <button id="kustuta_veateade">
+                    X
+                </button>
+            </div>
+        {% endif %}
         <div id="kaardid">
             <div class="kaart">
                 <form action="/otsi" method="post">
@@ -35,10 +44,11 @@
                 </form>
             </div>
 
+            {% if meediafailid %}
             {% for fail in meediafailid %}
                 <div class="kaart failikaart">
-                    <a href="/fail/{{ fail.unikaalne_nimi }}">
-                        <img src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
+                    <a class="faili_link" href="/fail/{{ fail.unikaalne_nimi }}">
+                        <img class="esituspilt" src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
                     </a>
                     <p class="nimi">{{ fail.nimi }}.{{ fail.tuup }}</p>
                     <div class="sildid-ja-nupud">
@@ -46,14 +56,132 @@
 
                         </div>
                         <div class="nupud">
-                            <button  style="--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --taust-tavaline )">B</button>
-                            <button style="--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst );">A</button>
+                            <button class="kustuta_fail" style="--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --taust-tavaline )">
+                                <img src="./../static/assets/trash.svg" alt="Kustuta">
+                            </button>
+
+                            <button class="kopeeri_link" style="--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst );">
+                                <img src="./../static/assets/link.svg" alt="Kopeeri link">
+                            </button>
                         </div>
                     </div>
                 </div>
             {% endfor %}
+            {% endif %}
         </div>
-        {% endif %}
     </div>
+
+    <script>
+        const kustuta_veateade = ( _ ) => {
+            let kustutaja = new XMLHttpRequest( )
+            kustutaja.open( 'GET', '/kustuta_veateade' )
+            kustutaja.send( )
+
+            kustutaja.onreadystatechange = ( _ ) => { // Kui kustutaja valmisolek muutub
+                if ( kustutaja.readyState !== XMLHttpRequest.DONE )
+                    return;
+
+                if ( kustutaja.status !== 200 )
+                    return;
+
+                if ( kustutaja.responseText !== 'Veateade kustutatud.' )
+                    return;
+
+                let veateade = document.getElementsByClassName( 'veateade' ).item( 0 )
+                veateade.remove( )
+            }
+        }
+
+        const failikaardid = document.getElementsByClassName( 'failikaart' )
+
+        const kustuta_fail = ( failikaart, faili_eriline_nimi ) => {
+            let kustutaja = new XMLHttpRequest( )
+            kustutaja.open( 'POST', '/kustuta_fail/' )
+
+            const andmed = new FormData( )
+            andmed.append( 'faili_eriline_nimi', faili_eriline_nimi )
+
+            let api_voti = ''
+            let kupsised =  document.cookie.split( '; ' )
+            for ( let kupsis of kupsised ) {
+                kupsis = kupsis.split( '=' )
+                if ( kupsis[ 0 ] !== 'api_voti' )
+                    continue
+
+                kupsis[ 0 ] = ''
+                api_voti = kupsis.join( '' )
+
+                api_voti += '='.repeat( kupsis.length - 2 )
+                break
+            }
+
+            andmed.append( 'api_voti', api_voti )
+
+            kustutaja.send( andmed )
+
+            kustutaja.onreadystatechange = ( _ ) => { // Kui kustutaja valmisolek muutub
+                if ( kustutaja.readyState !== XMLHttpRequest.DONE )
+                    return;
+
+                if ( kustutaja.status !== 200 )
+                    return;
+
+                const tagastustekst = kustutaja.responseText
+                if ( tagastustekst === 'Fail kustutatud.' )
+                    failikaart.remove( )
+                else {
+                    // lisame veateate puhtalt htmli
+                    let leht = document.getElementById( 'leht' )
+
+                    let veateade = document.createElement( 'div' )
+                    veateade.className = 'veateade'
+
+                    let tekstielement = document.createElement( 'p' )
+                    tekstielement.innerText = tagastustekst
+
+                    let kustuta_veateade_nupp = document.createElement( 'button' )
+                    kustuta_veateade_nupp.id = 'kustuta_veateade'
+                    kustuta_veateade_nupp.innerText = 'X'
+
+                    kustuta_veateade_nupp.onclick = kustuta_veateade
+
+                    veateade.append( tekstielement )
+                    veateade.append( kustuta_veateade_nupp )
+
+                    leht.insertBefore( veateade, leht.firstChild )
+                }
+            }
+
+        }
+
+        // Lingi kopeerimine ja faili kustutamine
+        for ( let failikaart of failikaardid ) {
+            // leiame esimese elemendi, mille klassiks on 'faili_link' ja krabame selle ümbersuunamise lingi
+            // praegusel juhul on esimene vastav element pildi "wrapper" element sildiga a
+            // ning mille ümbersuunamise link viitab faili kuvamise lehele
+            let link = failikaart.getElementsByClassName( 'faili_link' ).item( 0 ).href
+
+            // sama lugu kopeerimisnupuga
+            let kopeerimis_nupp = failikaart.getElementsByClassName( 'kopeeri_link' ).item( 0 )
+
+            // nupu klikkamisel kopeerime faililingi lõikelauale
+            kopeerimis_nupp.onclick = ( _ ) => { // "_" parameeter, sest me ei kasuta parameetrit ning (teoreetiliselt) anname compilerile teada et, jou, pole vaja midagi tegelt (naeb parem valja)
+                navigator.clipboard.writeText( link )
+            }
+
+            let kustutamis_nupp = failikaart.getElementsByClassName( 'kustuta_fail' ).item( 0 )
+
+            kustutamis_nupp.onclick = ( _ ) => {
+                let faili_eriline_nimi = link.split( '/' )
+                faili_eriline_nimi = faili_eriline_nimi[ faili_eriline_nimi.length - 1 ]
+
+                kustuta_fail( failikaart, faili_eriline_nimi )
+            }
+        }
+
+        const kustuta_veateade_nupp = document.getElementById( 'kustuta_veateade' )
+        if ( kustuta_veateade_nupp !== null )
+            kustuta_veateade_nupp.onclick = kustuta_veateade
+    </script>
 </body>
 </html>

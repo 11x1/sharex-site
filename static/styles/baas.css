@@ -19,3 +19,48 @@ body {
     padding: 0;
     background: var( --taust-tavaline );
 }
+
+.veateade {
+    position: static;
+    border: var( --viga ) solid 2px;
+    border-radius: var( --umardus );
+
+    background: var( --taust-viga );
+
+    text-align: center;
+    backdrop-filter: blur( var( --hagusus ) );
+
+    width: fit-content;
+
+    padding: 0 10px;
+    margin: 20px auto;
+
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.veateade p {
+    color: var( --tekst );
+}
+
+.veateade button {
+    margin: auto 0;
+    border-radius: var( --umardus );
+    border: 2px var( --peamine ) solid;
+
+    padding: 3px 6px;
+
+    height: min-content;
+
+    background: var( --taust-peamine );
+
+    filter: saturate( 0.3 );
+    transition-duration: 200ms;
+
+    color: var( --tekst );
+}
+
+.veateade button:hover {
+    filter: saturate( 1 );
+}
