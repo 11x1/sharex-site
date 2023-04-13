@@ -12,5 +12,12 @@ class Fail:
     def on_tuhi( self ):
         return self.on_olemas
 
+    def json_formaat( self ) -> dict:
+        return {
+            'nimi'          : self.nimi,
+            'unikaalne_nimi': self.unikaalne_nimi,
+            'tuup'          : self.tuup
+        }
+
     def __eq__( self, other ) -> bool:
         return self.on_olemas == other.on_olemas and self.id == other.id

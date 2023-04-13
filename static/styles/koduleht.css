@@ -49,6 +49,20 @@
     border-bottom: var( --peamine-hele ) solid 2px;
 }
 
+.kaart .tuup p {
+    color: #dddddd;
+    font-size: 1.2rem;
+    margin: 10px 0;
+}
+
+.kaart .tuubid {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+
+    font-size: 24px;
+}
+
 .kaart .nupud {
     display: flex;
     flex-direction: row-reverse;

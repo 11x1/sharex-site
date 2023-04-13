@@ -197,6 +197,25 @@ def api_login( ):
 
     return kupsiste_haldaja
 
+@Veebileht.post( '/api/otsi' )
+def api_otsi( ):
+    failinimi = request.form.get( 'failinimi' )
+    sildid = request.form.get( 'sildid' )
+    tuubid = request.form.get( 'tuup' ).split( '|' )
+
+    api_voti = leia_kupsised( ).get( 'api_voti' )
+
+    kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], api_voti )
+
+    if kasutaja.on_tuhi( ):
+        return { 'otsing_onnestus': False }
+
+    leitud_failid = Andmebaas.leia_otsingu_failid( kasutaja, failinimi, sildid.split( ',' ), tuubid )
+
+    failid_json = list( map( lambda fail: fail.json_formaat( ), leitud_failid ) )
+
+    return jsonify( failid_json )
+
 @pealeht_kui_kasutaja_on_sisse_loginud
 @Veebileht.get( '/sisselogimine' )
 def sisselogimine( ):
@@ -273,7 +292,7 @@ def kustuta_fail( ):
     eriline_faili_nimi = request.form.get( 'faili_eriline_nimi' )
     faili_eriline_nimi = escape( eriline_faili_nimi )
 
-    saadud_api_voti = request.form.get( 'api_voti' ) + '09'
+    saadud_api_voti = request.form.get( 'api_voti' )
 
     fail = Andmebaas.leia_fail( LEIA_FAIL[ 'unikaalne_nimi' ], str( faili_eriline_nimi ) )
 

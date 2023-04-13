@@ -226,6 +226,32 @@ class AndmebaasiSild:
 
         return kasutaja
 
+    def leia_otsingu_failid( self, kasutaja: Kasutaja, failinimi: str, sildid: list, tuubid: list ) -> list:
+        uhendus = self.uhenda( )
+        otsija = uhendus.cursor( )
+
+        info = {
+            'failinimi'     : failinimi,
+            'sildid'        : sildid[0],
+            'kasutaja_id'   : kasutaja.id
+        }
+
+        jm = '"'
+
+        otsing = f"SELECT { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'id' ] }, { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'nimi' ] }, { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'unikaalne_nimi' ] }, { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'failituup' ] } FROM { TABELI_NIMI[ 'failid' ] }, { TABELI_NIMI[ 'uleslaadimised' ] } WHERE { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'nimi' ] } LIKE %(failinimi)s AND { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'failituup' ] } IN ( { jm + ( jm + ', ' + jm).join( tuubid ) + jm } ) AND { TABELI_NIMI[ 'uleslaadimised' ] }.kasutaja_id = %(kasutaja_id)s AND { TABELI_NIMI[ 'uleslaadimised' ] }.faili_id = { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'id' ] }"
+
+        print( otsing )
+        otsija.execute( otsing, info )
+
+        failid = map( lambda faili_info: Fail(
+            faili_info[ INDEKSID[ 'faili_id' ] ],
+            faili_info[ INDEKSID[ 'failinimi' ] ],
+            faili_info[ INDEKSID[ 'unikaalne_failinimi' ] ],
+            faili_info[ INDEKSID[ 'failitüüp' ] ]
+        ), otsija.fetchall( ) )
+
+        return list( failid )
+
     def leia_kasutaja_failid( self, kasutaja: Kasutaja, start: int, limiit: int ):
         leitud = self.leia( TABELI_NIMI[ 'uleslaadimised' ], 'kasutaja_id', kasutaja.id )
 

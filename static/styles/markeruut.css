@@ -1,0 +1,45 @@
+.markeruut {
+    position: relative;
+    width: fit-content;
+}
+
+.markeruut > * {
+    top: 0;
+    left: 0;
+}
+
+.markeruut .visuaalne p {
+    position: relative;
+    top: 0;
+    left: 0;
+    margin: 0;
+}
+
+.markeruut input {
+    position: absolute;
+    opacity: 0;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.markeruut input:hover {
+    cursor: pointer;
+}
+
+.visuaalne {
+    filter: saturate( 0.4 );
+
+    border-radius: var( --umardus );
+    border: var( --peamine ) solid 2px;
+    background: var( --taust-peamine );
+
+    padding: 5px 10px;
+
+    transition-duration: 200ms;
+}
+
+.markeruut input:checked ~ .visuaalne {
+    filter: saturate( 1 );
+}
