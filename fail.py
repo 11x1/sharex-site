@@ -19,5 +19,8 @@ class Fail:
             'tuup'          : self.tuup
         }
 
+    def __str__( self ) -> str:
+        return f'{ "X | " if self.on_tuhi( ) else "" }{ self.id } { self.nimi }.{ self.tuup }< { self.unikaalne_nimi } >'
+
     def __eq__( self, other ) -> bool:
         return self.on_olemas == other.on_olemas and self.id == other.id

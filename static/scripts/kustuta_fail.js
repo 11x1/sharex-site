@@ -1,6 +1,6 @@
 const kustuta_fail = ( failikaart, faili_eriline_nimi ) => {
     let kustutaja = new XMLHttpRequest( )
-    kustutaja.open( 'POST', '/kustuta_fail/' )
+    kustutaja.open( 'POST', '/api/kustuta_fail/' )
 
     const andmed = new FormData( )
     andmed.append( 'faili_eriline_nimi', faili_eriline_nimi )
@@ -30,27 +30,19 @@ const kustuta_fail = ( failikaart, faili_eriline_nimi ) => {
         if ( kustutaja.status !== 200 )
             return;
 
-        const tagastustekst = kustutaja.responseText
-        if ( tagastustekst === 'Fail kustutatud.' )
-            failikaart.remove( )
-        else {
+        const json_tagastus = JSON.parse( kustutaja.response )
+
+        let leht = document.getElementById( 'leht' )
+
+        if ( json_tagastus.status === 200 ) {
+            failikaart.remove()
+
+            let heateade = loo_heateade( json_tagastus.sonum )
+
+            leht.insertBefore(heateade, leht.firstChild)
+        } else {
             // lisame veateate puhtalt htmli
-            let leht = document.getElementById( 'leht' )
-
-            let veateade = document.createElement( 'div' )
-            veateade.className = 'veateade'
-
-            let tekstielement = document.createElement( 'p' )
-            tekstielement.innerText = tagastustekst
-
-            let kustuta_veateade_nupp = document.createElement( 'button' )
-            kustuta_veateade_nupp.id = 'kustuta_veateade'
-            kustuta_veateade_nupp.innerText = 'X'
-
-            kustuta_veateade_nupp.onclick = kustuta_veateade
-
-            veateade.append( tekstielement )
-            veateade.append( kustuta_veateade_nupp )
+            let veateade = loo_veateade( json_tagastus.sonum )
 
             leht.insertBefore( veateade, leht.firstChild )
         }
@@ -59,7 +51,7 @@ const kustuta_fail = ( failikaart, faili_eriline_nimi ) => {
 
 let failikaardid = document.getElementsByClassName( 'failikaart' )
 
-for ( let failikaart of failikaardid ) {
+const sea_kustutamine = ( failikaart ) => {
     let kustutamise_nupp = failikaart.getElementsByClassName( 'kustuta_fail' ).item( 0 )
     let link = failikaart.getElementsByClassName( 'faili_link' ).item( 0 ).href
 
@@ -69,4 +61,8 @@ for ( let failikaart of failikaardid ) {
 
         kustuta_fail( failikaart, faili_eriline_nimi )
     }
+}
+
+for ( let failikaart of failikaardid ) {
+    sea_kustutamine( failikaart )
 }

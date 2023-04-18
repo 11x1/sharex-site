@@ -2,10 +2,12 @@
     --peamine: #5555ff;
     --peamine-hele: #6666ff;
     --viga: red;
+    --hea: green;
 
     --taust-peamine: #5555ff40;
     --taust-peamine-hele: #7777ff60;
     --taust-viga: #ff000040;
+    --taust-hea: #00ff0040;
     --taust-tavaline: #3d3d3d;
 
     --umardus: 20px;
@@ -63,4 +65,10 @@ body {
 
 .veateade button:hover {
     filter: saturate( 1 );
+}
+
+.veateade.hea {
+    color: var( --hea );
+    border-color: var( --hea );
+    background: var( --taust-hea );
 }

@@ -1,19 +1,18 @@
 const kustuta_veateade = ( _ ) => {
     let kustutaja = new XMLHttpRequest( )
-    kustutaja.open( 'GET', '/kustuta_veateade' )
+    kustutaja.open( 'GET', '/api/kustuta_veateade' )
     kustutaja.send( )
 
-    kustutaja.onreadystatechange = ( _ ) => { // Kui kustutaja valmisolek muutub
+    kustutaja.onreadystatechange = ( _ ) => {
         if ( kustutaja.readyState !== XMLHttpRequest.DONE )
             return;
 
-        if ( kustutaja.status !== 200 )
+        let json_tagastus = JSON.parse( kustutaja.response )
+
+        if ( json_tagastus.status !== 200 )
             return;
 
-        if ( kustutaja.responseText !== 'Veateade kustutatud.' )
-            return;
-
-        let veateade = document.getElementsByClassName( 'veateade' ).item( 0 )
+        let veateade = document.getElementsByClassName( 'heateade' ).item( 0 )
         veateade.remove( )
     }
 }

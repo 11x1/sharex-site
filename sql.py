@@ -59,6 +59,11 @@ LEIA_FAIL = {
 TUHI_KASUTAJA   = Kasutaja( None, None, None, None )
 TUHI_FAIL       = Fail( None, None, None, None )
 
+def kustuta_failid_kaustast( kausta_aadress: str ):
+    for failinimi in os.listdir( kausta_aadress ):
+        os.remove( os.path.join( kausta_aadress, failinimi ) )
+    os.rmdir( kausta_aadress )
+
 class AndmebaasiSild:
     def __init__( self, kasutajanimi: str, parool: str, andmebaas: str, host: str ) -> None:
         self.kasutajanimi = kasutajanimi
@@ -226,7 +231,7 @@ class AndmebaasiSild:
 
         return kasutaja
 
-    def leia_otsingu_failid( self, kasutaja: Kasutaja, failinimi: str, sildid: list, tuubid: list ) -> list:
+    def leia_otsingu_failid( self, kasutaja: Kasutaja, failinimi: str, sildid: list, tuubid: list, start: int, lopp: int ) -> list:
         uhendus = self.uhenda( )
         otsija = uhendus.cursor( )
 
@@ -240,7 +245,6 @@ class AndmebaasiSild:
 
         otsing = f"SELECT { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'id' ] }, { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'nimi' ] }, { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'unikaalne_nimi' ] }, { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'failituup' ] } FROM { TABELI_NIMI[ 'failid' ] }, { TABELI_NIMI[ 'uleslaadimised' ] } WHERE { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'nimi' ] } LIKE %(failinimi)s AND { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'failituup' ] } IN ( { jm + ( jm + ', ' + jm).join( tuubid ) + jm } ) AND { TABELI_NIMI[ 'uleslaadimised' ] }.kasutaja_id = %(kasutaja_id)s AND { TABELI_NIMI[ 'uleslaadimised' ] }.faili_id = { TABELI_NIMI[ 'failid' ] }.{ LEIA_FAIL[ 'id' ] }"
 
-        print( otsing )
         otsija.execute( otsing, info )
 
         failid = map( lambda faili_info: Fail(
@@ -250,7 +254,18 @@ class AndmebaasiSild:
             faili_info[ INDEKSID[ 'failitüüp' ] ]
         ), otsija.fetchall( ) )
 
-        return list( failid )
+        failid = list( failid )
+
+        vahemik = lopp - start
+
+        lehti_enne = start // vahemik
+        lehti_parast = ( len( failid ) - lopp ) // vahemik + 1
+        if start > len( failid ):
+            return [ [ ], lehti_enne, 0 ]
+        elif lopp > len( failid ):
+            return [ failid[ start:len( failid ) ], lehti_enne, 0 ]
+
+        return [ failid[ start:lopp ], lehti_enne, lehti_parast ]
 
     def leia_kasutaja_failid( self, kasutaja: Kasutaja, start: int, limiit: int ):
         leitud = self.leia( TABELI_NIMI[ 'uleslaadimised' ], 'kasutaja_id', kasutaja.id )
@@ -323,16 +338,13 @@ class AndmebaasiSild:
     def kustuta_fail( self, fail ) -> bool:
         uhendus = self.uhenda( )
         kustutaja = uhendus.cursor( )
-        log( 'kustutatakse kasutajat' )
         if fail == TUHI_FAIL:
-            log( 'fail on tuhi' )
             return False
 
         kasutaja_id = self.leia_uks( TABELI_NIMI[ 'uleslaadimised' ], 'faili_id', fail.id )[ INDEKSID[ 'kasutaja_id' ] ]
         kasutaja = self.leia_kasutaja( LEIA_KASUTAJA[ 'id' ], kasutaja_id )
 
         if kasutaja == TUHI_KASUTAJA:
-            log( 'kasutajat pole' )
             return False
 
         kustutaja.execute( f"DELETE FROM { TABELI_NIMI[ 'uleslaadimised' ] } WHERE faili_id = %(faili_id)s", { 'faili_id': fail.id } )
@@ -345,6 +357,52 @@ class AndmebaasiSild:
         log( f'fail { fail } kustutati edukalt' )
 
         return True
+
+    def kustuta_kasutaja( self, kasutaja: Kasutaja ) -> bool:
+        uhendus = self.uhenda( )
+        kustutaja = uhendus.cursor( )
+
+        valjad = {
+            'kasutaja_id': kasutaja.id
+        }
+
+        # Kustutame kasutaja tabelist kasutajad
+        kustutaja.execute(
+            f'DELETE FROM { TABELI_NIMI[ "kasutajad" ] } WHERE '
+            f'{ LEIA_KASUTAJA[ "id" ] } = %(kasutaja_id)s',
+            valjad
+        )
+
+        # Kustutame koik faili viited failide tabelist
+        kustutaja.execute(
+            f'DELETE FROM { TABELI_NIMI[ "failid" ] } WHERE { TABELI_NIMI[ "failid" ] }.{ LEIA_FAIL[ "id" ] } in ( SELECT faili_id FROM uleslaadimised WHERE kasutaja_id = %(kasutaja_id)s )',
+            valjad
+        )
+
+        kustutaja.execute(
+            f'DELETE FROM { TABELI_NIMI[ "uleslaadimised" ] } WHERE kasutaja_id = %(kasutaja_id)s',
+            valjad
+        )
+
+        # Kustutame failid serverist
+        try:
+            kustuta_failid_kaustast( os.path.join( ULESLAADIMISTE_KAUST, kasutaja.api_voti ) )
+        except Exception as e:
+            log( f'Kasutaja { kasutaja } kustutamisel tekkis viga({ e })' )
+            return False
+
+        # Kustutame kasutaja andmebaasist
+        kustutaja.execute(
+            f'DELETE FROM { TABELI_NIMI[ "kasutajad" ] } WHERE { LEIA_KASUTAJA[ "id" ] } = %(kasutaja_id)s',
+            valjad
+        )
+        print( "KUSTUTATUD!" )
+        kustutaja.close( )
+        uhendus.commit( )
+
+        # Tagastame toevaartuse kui kasutaja kustutati edukalt
+        return True
+
 
     def kuva_kasutajad( self ) -> None:
         uhendus = self.uhenda( )

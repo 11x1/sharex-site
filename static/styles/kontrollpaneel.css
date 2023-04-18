@@ -28,3 +28,9 @@
 #kontrollpaneel button:hover {
     filter: saturate( 1 );
 }
+
+#kontrollpaneel button#kustuta_kasutaja {
+    background: var( --taust-viga );
+    color: var( --viga );
+    border-color: var( --viga );
+}

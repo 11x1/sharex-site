@@ -1,5 +1,6 @@
 #leht {
     max-width: 1200px;
+    margin: 0 auto;
 }
 
 #kaardid {
@@ -93,7 +94,10 @@
     margin-top: 2px;
 }
 
-.failikaart img.esituspilt {
+.failikaart img.esituspilt,
+.failikaart video {
+    position: relative;
+
     width: 100%;
     height: 150px;
     object-fit: cover;
@@ -103,7 +107,31 @@
     transition-duration: 200ms;
 }
 
-.failikaart img.esituspilt:hover {
+.failikaart a {
+    position: relative;
+    display: block;
+}
+
+.failikaart .video_link::after {
+    content: 'Video';
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform: translate( -50%, -50% );
+
+    background: var( --taust-tavaline );
+    padding: 10px;
+    border-radius: var( --umardus );
+
+    color: var( --tekst );
+}
+
+
+.failikaart img.esituspilt:hover,
+.failikaart .video_link:hover video {
     width: 100%;
     height: 150px;
     object-fit: cover;
@@ -113,4 +141,15 @@
 
 .failikaart .nimi {
     color: var( --peamine-hele );
+}
+
+.lehitseja {
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
+}
+
+.lehitseja a {
+    border: 1px solid white;
+    color: white;
 }

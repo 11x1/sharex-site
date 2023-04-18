@@ -1,10 +1,9 @@
-import os
-import uuid
+import os  # Kasutajate failide leidmiseks kasutades
+import uuid  # Eriliste failinimede genereerimine
 
 from flask import Flask, request, render_template, redirect, url_for, make_response, Response, abort, escape, send_from_directory, jsonify
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
-
 
 from sql import AndmebaasiSild, log, LEIA_KASUTAJA, LEIA_FAIL
 from parooli_kontroll import kontrolli_parool
@@ -20,7 +19,14 @@ AVALIKKUSE_TASEMED = {
     'privaatne': 2
 }
 
-LUBATUD_FAILITUUBID = [ 'IMAGE/PNG', 'IMAGE/GIF', 'IMAGE/JPEG', 'IMAGE/JPG' ]
+LUBATUD_FAILITUUBID = [ 'IMAGE/PNG', 'IMAGE/GIF', 'IMAGE/JPEG', 'IMAGE/JPG', 'VIDEO/MP4' ]
+
+def loo_json_tagastus( staatus, sonum, suund ):
+    return jsonify( {
+        'status': staatus,
+        'sonum': sonum,
+        'suund': suund
+    } )
 
 # Funktsioon, et kontrollida kas kasutaja on sisse logitud
 def on_sisse_logitud( ) -> bool:
@@ -80,11 +86,13 @@ def lae_fail_ules( fail: FileStorage, kasutaja: Kasutaja ) -> dict:
 
     korrastatud_failinimi = secure_filename( failinimi )
 
+    log( f'keegi yritas laadida { failituup }' )
+
     # kas fail on lubatud
     if not failituup.upper( ) in LUBATUD_FAILITUUBID:
         return { 'laeti_ules': False }
 
-    failituup = failituup.replace( 'image/', '' ) # korrastame failituubu salvestamise viisi
+    failituup = failituup.split( '/' )[ -1 ] # korrastame failituubu salvestamise viisi
     # salvestatakse png/jpeg/mp4 vms
 
     unikaalne_nimi = str( uuid.uuid4( ) )
@@ -104,6 +112,26 @@ def lae_fail_ules( fail: FileStorage, kasutaja: Kasutaja ) -> dict:
 
     fail.save( os.path.join( kasutaja_kausta_path, unikaalne_nimi + f'.{ failituup }' ) )
     return { 'laeti_ules': True, 'url': 'http://127.0.0.1:5000/fail/' + unikaalne_nimi  }
+
+def leia_failid( lehe_nr: int, kasutaja: Kasutaja, failinimi: str, sildid, tuubid ):
+    limiit = 12
+    algus = ( lehe_nr - 1 ) * limiit
+    lopp = algus + limiit
+
+    [ leitud_failid, lehti_enne, lehti_parast ] = Andmebaas.leia_otsingu_failid( kasutaja, failinimi,
+                                                                                 sildid.split( ',' ), tuubid, algus,
+                                                                                 lopp )
+
+    failid_json = list( map( lambda fail: fail.json_formaat( ), leitud_failid ) )
+
+    failid_json = failid_json[ ::-1 ]
+
+    failid_json.append(
+        { 'lehti': { 'enne': lehti_enne, 'parast': lehti_parast } }
+    )
+
+    return failid_json
+
 
 # Sharexi meediafailide vastuvotja
 @Veebileht.post( '/lae_ules' )
@@ -130,9 +158,7 @@ def meediafailide_vastuvotja( ):
     if not uleslaadimine.get( 'laeti_ules' ):
         return jsonify( veateade='Serveri error.' )
 
-    print( uleslaadimine.get( 'url' ) )
     return jsonify( url=uleslaadimine.get( 'url' ) )
-
 
 @Veebileht.post( '/registreeri' ) # Lubame ainult POST requestid
 def api_registreeri( ):
@@ -142,7 +168,8 @@ def api_registreeri( ):
     kasutaja_on_olemas = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'nimi' ], kasutajanimi )
 
     tagastus = make_response( redirect( url_for( 'registreeri' ) ) )
-    print( kasutaja_on_olemas )
+    tagastus = sea_kupsis( tagastus, 'heateade', '' )
+
     if not kasutaja_on_olemas.on_tuhi( ):
         tagastus = sea_kupsis( tagastus, 'veateade', 'Kasutajanimi on olemas.' )
         return tagastus
@@ -162,6 +189,7 @@ def api_registreeri( ):
 
     tagastus = make_response( redirect( url_for( 'sisselogimine' ) ) )
     tagastus = sea_kupsis( tagastus, 'veateade', '' )
+    tagastus = sea_kupsis( tagastus, 'heateade', 'Kasutaja loodi edukalt.' )
     tagastus = sea_kupsis( tagastus, 'api_voti', loodud_kasutaja.api_voti )
 
     return tagastus
@@ -172,6 +200,9 @@ def api_login( ):
     parool = lehele_saadetud_info[ 'parool' ]
     kupsiste_haldaja = make_response( redirect( url_for( 'sisselogimine' ) ) )
 
+    if leia_kupsised( ).get( 'veateade' ) != '':
+        kupsiste_haldaja = sea_kupsis( kupsiste_haldaja, 'heateade', '' )
+
     [ kas_parool_taidab_nouded, _ ] = kontrolli_parool( parool )
     if not kas_parool_taidab_nouded:
         kupsiste_haldaja = sea_kupsis( kupsiste_haldaja, 'veateade', 'Parool ei täida nõudeid.' )
@@ -179,7 +210,6 @@ def api_login( ):
 
     kasutajanimi = lehele_saadetud_info[ 'kasutajanimi' ].lower( )
     leitud_kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'nimi' ], kasutajanimi )
-    print( kasutajanimi, leitud_kasutaja )
 
     if leitud_kasutaja.on_tuhi( ):
         kupsiste_haldaja = sea_kupsis( kupsiste_haldaja, 'veateade', 'Kasutajanime ei ole olemas.' )
@@ -202,19 +232,83 @@ def api_otsi( ):
     failinimi = request.form.get( 'failinimi' )
     sildid = request.form.get( 'sildid' )
     tuubid = request.form.get( 'tuup' ).split( '|' )
+    lehe_nr = int( request.form.get( 'lehe_nr' ) )
 
     api_voti = leia_kupsised( ).get( 'api_voti' )
 
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], api_voti )
 
     if kasutaja.on_tuhi( ):
-        return { 'otsing_onnestus': False }
+        return loo_json_tagastus( 500, 'Kasutajat ei leitud.', url_for( 'sisselogimine' ) )
 
-    leitud_failid = Andmebaas.leia_otsingu_failid( kasutaja, failinimi, sildid.split( ',' ), tuubid )
-
-    failid_json = list( map( lambda fail: fail.json_formaat( ), leitud_failid ) )
+    failid_json = leia_failid( lehe_nr, kasutaja, failinimi, sildid, tuubid )
 
     return jsonify( failid_json )
+
+@peab_olema_sisse_logitud
+@Veebileht.post( '/api/kustuta_fail/' )  # Saaks teah samamoodi nagu on /kustuta_veateade aga
+def api_kustuta_fail( ):
+    eriline_faili_nimi = request.form.get( 'faili_eriline_nimi' )
+    faili_eriline_nimi = escape( eriline_faili_nimi )
+
+    saadud_api_voti = request.form.get( 'api_voti' )
+
+    fail = Andmebaas.leia_fail( LEIA_FAIL[ 'unikaalne_nimi' ], str( faili_eriline_nimi ) )
+
+    if fail.on_tuhi( ):
+        return loo_json_tagastus( 500, 'Fail on tühi.', '/' )
+
+    uleslaetud_faili_kasutaja = Andmebaas.leia_uleslaetud_faili_kasutaja( fail )
+
+    log( f'{ uleslaetud_faili_kasutaja.api_voti } & { saadud_api_voti }' )
+    if uleslaetud_faili_kasutaja.on_tuhi( ) or uleslaetud_faili_kasutaja.api_voti != saadud_api_voti:
+        return loo_json_tagastus( 500, 'Te ei ole faili omanik', '/' )
+
+    kas_fail_kustutati = Andmebaas.kustuta_fail( fail )
+    if not kas_fail_kustutati:
+        return loo_json_tagastus( 500, 'Faili ei kustutatud.', '/' )
+
+    return loo_json_tagastus( 200, 'Fail kustutatud', '/' )
+
+@peab_olema_sisse_logitud
+@Veebileht.post( '/api/kustuta_kasutaja/' )
+def api_kustuta_kasutaja( ):
+    api_voti = leia_kupsised( ).get( 'api_voti' )
+
+    kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ "api_voti" ], api_voti )
+    if kasutaja.on_tuhi( ):
+        tagastus = loo_json_tagastus( 400, 'Kasutajat ei leitud', '/' )
+
+        tagastus = sea_kupsis( tagastus, 'veateade', 'Kasutajat ei leitud.' )
+
+        return tagastus
+
+    kasutaja_kustutati = Andmebaas.kustuta_kasutaja( kasutaja )
+    if not kasutaja_kustutati:
+        tagastus = loo_json_tagastus( 500, 'Kellad 🔔🔔🔔', '/' )
+
+        tagastus = sea_kupsis( tagastus, 'veateade', 'Serveri error.' )
+
+        return tagastus
+
+    tagastus = loo_json_tagastus( 200, 'Kasutaja kustutati edukalt', '/sisselogimine' )
+
+    tagastus = sea_kupsis( tagastus, 'veateade', '' )
+    tagastus = sea_kupsis( tagastus, 'heateade', 'Kasutaja kustutati edukalt!' )
+
+    return tagastus
+
+@Veebileht.get( '/api/kustuta_veateade/' )
+def api_kustuta_veateade( ):
+    tagastus = loo_json_tagastus( 200, 'Veateade kustutatud', '/' )
+    tagastus = sea_kupsis( tagastus, 'veateade', '' )
+    return tagastus
+
+@Veebileht.get( '/api/kustuta_heateade/' )
+def api_kustuta_heateade( ):
+    tagastus = loo_json_tagastus( 200, 'Heateade kustutatud', '/' )
+    tagastus = sea_kupsis( tagastus, 'heateade', '' )
+    return tagastus
 
 @pealeht_kui_kasutaja_on_sisse_loginud
 @Veebileht.get( '/sisselogimine' )
@@ -235,15 +329,16 @@ def index( lehe_number: int ):
 
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], kupsised.get( 'api_voti' ) )
 
-    algus = ( lehe_number - 1 ) * 12
-    limiit = 12
+    meediafailid = leia_failid( lehe_number, kasutaja, '%', '', [ 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'gif' ] )
 
-    meediafailid = Andmebaas.leia_kasutaja_failid( kasutaja, algus, limiit )
+    lehed = meediafailid[ -1 ][ 'lehti' ]
+    lehed = lehed[ 'enne' ] + lehed[ 'parast' ] + 1
 
     return render_template( 'index.html',
                             kupsised=kupsised,
-                            meediafailid=meediafailid,
-                            lehenumber=lehe_number )
+                            meediafailid=meediafailid[ :-1 ],
+                            lehenumber=lehe_number,
+                            lehed=lehed )
 
 @peab_olema_sisse_logitud
 @Veebileht.get( '/sharexi_konfiguratsioon' )
@@ -271,7 +366,7 @@ def tagasta_sharexi_config( ):
 def failikuvaja( eriline_faili_nimi: str ):
     # Siin pole vaja vaadata kas kasutaja on sisse logitud sest praegu saavad pilte vaadata ukskoik kellel on pildi link
     faili_unikaalne_nimi = escape( eriline_faili_nimi )
-    print( str( faili_unikaalne_nimi ) )
+
     fail = Andmebaas.leia_fail( LEIA_FAIL[ 'unikaalne_nimi' ], str( faili_unikaalne_nimi ) )
 
     if fail.on_tuhi( ):
@@ -286,42 +381,11 @@ def failikuvaja( eriline_faili_nimi: str ):
 
     return send_from_directory( os.path.join( ULESLAADIMISTE_KAUST, kasutaja_api_voti ),  f'{ eriline_faili_nimi }.{ faili_tuup }' )
 
-@peab_olema_sisse_logitud
-@Veebileht.post( '/kustuta_fail/' )  # Saaks teah samamoodi nagu on /kustuta_veateade aga
-def kustuta_fail( ):
-    eriline_faili_nimi = request.form.get( 'faili_eriline_nimi' )
-    faili_eriline_nimi = escape( eriline_faili_nimi )
-
-    saadud_api_voti = request.form.get( 'api_voti' )
-
-    fail = Andmebaas.leia_fail( LEIA_FAIL[ 'unikaalne_nimi' ], str( faili_eriline_nimi ) )
-
-    if fail.on_tuhi( ):
-        return make_response( 'Faili ei leitud.' )
-
-    uleslaetud_faili_kasutaja = Andmebaas.leia_uleslaetud_faili_kasutaja( fail )
-
-    log( f'{ uleslaetud_faili_kasutaja.api_voti } & { saadud_api_voti }' )
-    if uleslaetud_faili_kasutaja.on_tuhi( ) or uleslaetud_faili_kasutaja.api_voti != saadud_api_voti:
-        return make_response( 'Te ei ole faili omanik.' )
-
-    kas_fail_kustutati = Andmebaas.kustuta_fail( fail )
-    if not kas_fail_kustutati:
-        return make_response( 'Faili ei saanud kustutada.' )
-
-    return make_response( 'Fail kustutatud.' )
-
 @Veebileht.route( '/logout' )
 def logi_valja( ):
     kupsiste_haldaja = make_response( redirect( url_for( 'sisselogimine' ) ) )
     kupsiste_haldaja = kustuta_kupsised( kupsiste_haldaja )
     return kupsiste_haldaja
-
-@Veebileht.get( '/kustuta_veateade' )
-def kustuta_veateade( ):
-    tagastus = make_response( 'Veateade kustutatud.' )
-    tagastus = sea_kupsis( tagastus, 'veateade', '' )
-    return tagastus
 
 @Veebileht.route( '/' )  # juhul kui kasutaja satub baaslehele siis saadame kasutaja kodulehele
 def kodulehele( ):

@@ -15,6 +15,12 @@
           </div>
       {% endif %}
 
+      {% if kupsised['heateade'] %}
+          <div class="veateade hea">
+              <p>{{ kupsised['heateade'] }}</p>
+          </div>
+      {% endif %}
+
       {% block sisestamine %} {% endblock %}
 
       {% block lisad %}{% endblock %}
