@@ -112,7 +112,8 @@
     display: block;
 }
 
-.failikaart .video_link::after {
+.failikaart .video_link::after,
+.failikaart .gif_link::after {
     content: 'Video';
 
     position: absolute;
@@ -129,6 +130,10 @@
     color: var( --tekst );
 }
 
+.failikaart .gif_link::after {
+    content: 'GIF';
+}
+
 
 .failikaart img.esituspilt:hover,
 .failikaart .video_link:hover video {
@@ -141,15 +146,4 @@
 
 .failikaart .nimi {
     color: var( --peamine-hele );
-}
-
-.lehitseja {
-    display: flex;
-    flex-direction: row;
-    gap: 5px;
-}
-
-.lehitseja a {
-    border: 1px solid white;
-    color: white;
 }

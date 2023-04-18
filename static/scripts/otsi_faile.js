@@ -1,6 +1,11 @@
 const otsija_vorm = document.getElementById( 'otsija' )
+const otsi_nupp = document.getElementById( 'otsi_saada' )
+
 const kaardid = document.getElementById( 'kaardid' )
 const leht = document.getElementById( 'leht' )
+
+let otsitakse = false
+let koik_failid_leitud = false
 
 const otsi_faile = ( lehe_nr ) => {
     let failinimi = document.getElementById( 'faili_osaline_nimi' ).value
@@ -13,7 +18,7 @@ const otsi_faile = ( lehe_nr ) => {
         gif : document.getElementById( 'otsi_gif' ).checked
     }
 
-    if ( !( otsitavad_tuubid.pilt || otsitavad_tuubid.video || otsitavad_tuubid.gif ) ) {
+    if ( !( otsitavad_tuubid.pilt || otsitavad_tuubid.video || otsitavad_tuubid.gif ) || !otsitakse ) {
         tuup.push( 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'gif' )
     } else {
         if ( otsitavad_tuubid.pilt ) {
@@ -29,7 +34,7 @@ const otsi_faile = ( lehe_nr ) => {
         }
     }
 
-    if ( failinimi === '' )
+    if ( failinimi === '' || !otsitakse )
         failinimi = '%'
 
     let otsija = new XMLHttpRequest( )
@@ -54,12 +59,6 @@ const otsi_faile = ( lehe_nr ) => {
 
         let json_tagastus = JSON.parse( otsija.response )
 
-        if ( localStorage.getItem( 'otsi_lehe_nr' ) === '0' ) {
-            while ( kaardid.children.length > 1 ) {
-                kaardid.removeChild(kaardid.lastChild)
-            }
-        }
-
         let faililugeja = 0
         for ( let tagastus_obj of json_tagastus ) {
             if ( faililugeja >= json_tagastus.length - 1 )
@@ -73,17 +72,16 @@ const otsi_faile = ( lehe_nr ) => {
 
         let lehti = json_tagastus[ json_tagastus.length - 1 ].lehti
 
-        console.log( lehti )
-
         if ( lehe_nr > lehti.enne + lehti.parast ) {
             localStorage.setItem( 'otsi_lehe_nr', '0' )
+            koik_failid_leitud = true
         } else {
             localStorage.setItem( 'otsi_lehe_nr', lehe_nr.toString( ) )
         }
 
         otsija_vorm.onsubmit = sundmus => {
             sundmus.preventDefault( )
-            otsi_faile( )
+            otsi_faile( 1 )
 
             return false
         }
@@ -91,30 +89,49 @@ const otsi_faile = ( lehe_nr ) => {
 }
 
 otsija_vorm.onsubmit = sundmus => {
+    koik_failid_leitud = false
+
+    while ( kaardid.children.length > 1 ) {
+        kaardid.removeChild( kaardid.lastChild )
+    }
+
+    otsitakse = true
     sundmus.preventDefault( )
+
     otsi_faile( 1 )
 
     return false
 }
 
-otsija_vorm.onreset = _ => {
-    otsija_vorm.reset( )
-    localStorage.setItem( 'otsi_lehe_nr', '0' )
-
-    setTimeout( otsi_faile, 10 ) // Vaike valeajastus kui kutsuksime kohe => failid ei oleks taastatud
+otsi_nupp.onclick = ( ) => {
+    while ( kaardid.children.length > 1 ) {
+        kaardid.removeChild( kaardid.lastChild )
+    }
 }
 
-localStorage.setItem( 'otsi_lehe_nr', '0' )
+otsija_vorm.onreset = _ => {
+    otsija_vorm.reset( )
 
-window.onscroll = sundmus => {
-    let praegune_nr = parseInt( localStorage.getItem( 'otsi_lehe_nr' ) )
-    console.log( 'page', praegune_nr )
-    if ( praegune_nr === 0 )
+    otsitakse = false
+    koik_failid_leitud = false
+
+    localStorage.setItem( 'otsi_lehe_nr', '1' )
+
+    setTimeout( ( _ ) => otsi_faile( 1 ), 10 ) // Vaike valeajastus kui kutsuksime kohe => failid ei oleks taastatud
+}
+
+localStorage.setItem( 'otsi_lehe_nr', '1' )
+
+window.onscroll = _ => {
+    // leiame jargmised, kui kasutaja on kerinud lehe loppu
+    let peaks_leidma_uued = ( document.body.clientHeight - 20 ) <= ( document.scrollingElement.scrollTop + window.innerHeight )
+    let praegune_lehe_nr = localStorage.getItem( 'otsi_lehe_nr' )
+
+    if ( praegune_lehe_nr === '0' || !peaks_leidma_uued )
         return
 
-    if( Math.abs( document.body.scrollHeight - document.body.scrollTop - document.body.clientHeight ) < 1 ) {
-        otsi_faile(
-            praegune_nr + 1
-        )
-    }
+    if ( isNaN( parseInt( praegune_lehe_nr ) || koik_failid_leitud ) )
+        return // Kui ei saa numbrit
+
+    otsi_faile( parseInt( praegune_lehe_nr ) + 1 )
 }

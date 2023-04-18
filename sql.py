@@ -247,12 +247,14 @@ class AndmebaasiSild:
 
         otsija.execute( otsing, info )
 
+        leitud = otsija.fetchall( )
+
         failid = map( lambda faili_info: Fail(
             faili_info[ INDEKSID[ 'faili_id' ] ],
             faili_info[ INDEKSID[ 'failinimi' ] ],
             faili_info[ INDEKSID[ 'unikaalne_failinimi' ] ],
             faili_info[ INDEKSID[ 'failitüüp' ] ]
-        ), otsija.fetchall( ) )
+        ), leitud[ ::-1 ] )
 
         failid = list( failid )
 
@@ -260,32 +262,13 @@ class AndmebaasiSild:
 
         lehti_enne = start // vahemik
         lehti_parast = ( len( failid ) - lopp ) // vahemik + 1
+
         if start > len( failid ):
             return [ [ ], lehti_enne, 0 ]
         elif lopp > len( failid ):
             return [ failid[ start:len( failid ) ], lehti_enne, 0 ]
 
         return [ failid[ start:lopp ], lehti_enne, lehti_parast ]
-
-    def leia_kasutaja_failid( self, kasutaja: Kasutaja, start: int, limiit: int ):
-        leitud = self.leia( TABELI_NIMI[ 'uleslaadimised' ], 'kasutaja_id', kasutaja.id )
-
-        failid = [ ]
-        for faili_info in leitud:
-            faili_id = faili_info[ INDEKSID[ 'faili_id' ] ]
-            fail = self.leia_fail( LEIA_FAIL[ 'id' ], faili_id )
-            if fail != TUHI_FAIL:
-                failid.append( fail )
-
-        failid = failid[ ::-1 ]
-
-        n_faile = len( failid )
-        if start > n_faile:
-            return [ TUHI_FAIL ]
-        if start + limiit > n_faile:
-            limiit = n_faile - start
-
-        return failid[ start:limiit ]
 
     def kas_api_voti_on_legaalne( self, api_voti: str ) -> bool:
         leitud = self.leia( 'kasutajad', 'api_voti', api_voti )
@@ -295,7 +278,6 @@ class AndmebaasiSild:
         # Eeldame, et kasutaja olemasolu on juba kontrollitud
         # Samuti on kontrollitud ka parooli tugevus
         api_voti = Fernet.generate_key( )
-        print( 'loodi voti: ', api_voti )
 
         krupter = Fernet( api_voti )
         parool = krupter.encrypt( plaintext_parool.encode( 'utf-8' ) )
@@ -396,13 +378,12 @@ class AndmebaasiSild:
             f'DELETE FROM { TABELI_NIMI[ "kasutajad" ] } WHERE { LEIA_KASUTAJA[ "id" ] } = %(kasutaja_id)s',
             valjad
         )
-        print( "KUSTUTATUD!" )
+
         kustutaja.close( )
         uhendus.commit( )
 
         # Tagastame toevaartuse kui kasutaja kustutati edukalt
         return True
-
 
     def kuva_kasutajad( self ) -> None:
         uhendus = self.uhenda( )

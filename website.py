@@ -1,3 +1,4 @@
+import json
 import os  # Kasutajate failide leidmiseks kasutades
 import uuid  # Eriliste failinimede genereerimine
 
@@ -77,22 +78,19 @@ def kustuta_kupsised( tagastus: Response ):
     kupsised = leia_kupsised( )
     for kupsis in kupsised:
         tagastus.delete_cookie( kupsis )
-    print( 'kustutati koik kupsised' )
     return tagastus
 
 def lae_fail_ules( fail: FileStorage, kasutaja: Kasutaja ) -> dict:
-    failinimi = fail.name
+    failinimi = "".join( fail.filename.split( '.' )[ :-1 ] )
     failituup = fail.content_type
 
     korrastatud_failinimi = secure_filename( failinimi )
-
-    log( f'keegi yritas laadida { failituup }' )
 
     # kas fail on lubatud
     if not failituup.upper( ) in LUBATUD_FAILITUUBID:
         return { 'laeti_ules': False }
 
-    failituup = failituup.split( '/' )[ -1 ] # korrastame failituubu salvestamise viisi
+    failituup = failituup.split( '/' )[ -1 ].lower( ) # korrastame failituubu salvestamise viisi
     # salvestatakse png/jpeg/mp4 vms
 
     unikaalne_nimi = str( uuid.uuid4( ) )
@@ -124,8 +122,6 @@ def leia_failid( lehe_nr: int, kasutaja: Kasutaja, failinimi: str, sildid, tuubi
 
     failid_json = list( map( lambda fail: fail.json_formaat( ), leitud_failid ) )
 
-    failid_json = failid_json[ ::-1 ]
-
     failid_json.append(
         { 'lehti': { 'enne': lehti_enne, 'parast': lehti_parast } }
     )
@@ -147,6 +143,7 @@ def meediafailide_vastuvotja( ):
     saadud_fail = request.files.get( 'file' )
 
     if saadud_fail is None:
+        log( 'Faili ei leitud.' )
         abort( 422, 'Faili ei leitud.' )
 
     # faili_avalikkus = AVALIKKUSE_TASEMED['avalik']
@@ -156,6 +153,7 @@ def meediafailide_vastuvotja( ):
     uleslaadimine = lae_fail_ules( saadud_fail, kasutaja )
 
     if not uleslaadimine.get( 'laeti_ules' ):
+        log( 'Uleslaadimisel laks viltu.' )
         return jsonify( veateade='Serveri error.' )
 
     return jsonify( url=uleslaadimine.get( 'url' ) )
@@ -227,6 +225,7 @@ def api_login( ):
 
     return kupsiste_haldaja
 
+@peab_olema_sisse_logitud
 @Veebileht.post( '/api/otsi' )
 def api_otsi( ):
     failinimi = request.form.get( 'failinimi' )
@@ -260,7 +259,6 @@ def api_kustuta_fail( ):
 
     uleslaetud_faili_kasutaja = Andmebaas.leia_uleslaetud_faili_kasutaja( fail )
 
-    log( f'{ uleslaetud_faili_kasutaja.api_voti } & { saadud_api_voti }' )
     if uleslaetud_faili_kasutaja.on_tuhi( ) or uleslaetud_faili_kasutaja.api_voti != saadud_api_voti:
         return loo_json_tagastus( 500, 'Te ei ole faili omanik', '/' )
 
@@ -323,22 +321,18 @@ def registreeri( ):
     return render_template( 'registreeri.html', kupsised=kupsised )
 
 @peab_olema_sisse_logitud
-@Veebileht.get( '/kodu/<int:lehe_number>', defaults={ 'lehe_number': 1 } )
-def index( lehe_number: int ):
+@Veebileht.get( '/' )
+def index( ):
     kupsised = leia_kupsised( )
 
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], kupsised.get( 'api_voti' ) )
 
-    meediafailid = leia_failid( lehe_number, kasutaja, '%', '', [ 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'gif' ] )
-
-    lehed = meediafailid[ -1 ][ 'lehti' ]
-    lehed = lehed[ 'enne' ] + lehed[ 'parast' ] + 1
+    meediafailid = leia_failid( 1, kasutaja, '%', '', [ 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'gif' ] )
 
     return render_template( 'index.html',
                             kupsised=kupsised,
-                            meediafailid=meediafailid[ :-1 ],
-                            lehenumber=lehe_number,
-                            lehed=lehed )
+                            kasutaja=kasutaja,
+                            meediafailid=meediafailid[ :-1 ] )
 
 @peab_olema_sisse_logitud
 @Veebileht.get( '/sharexi_konfiguratsioon' )
@@ -386,10 +380,6 @@ def logi_valja( ):
     kupsiste_haldaja = make_response( redirect( url_for( 'sisselogimine' ) ) )
     kupsiste_haldaja = kustuta_kupsised( kupsiste_haldaja )
     return kupsiste_haldaja
-
-@Veebileht.route( '/' )  # juhul kui kasutaja satub baaslehele siis saadame kasutaja kodulehele
-def kodulehele( ):
-    return redirect( url_for( 'index', lehe_number=1 ) )
 
 if __name__ == "__main__":
     Veebileht.run( debug=True )

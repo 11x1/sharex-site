@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
 
-    <title>Koduleht - leht {{ lehenumber }}</title>
+    <title>Koduleht - {{ kasutaja.nimi }}</title>
     <link rel="stylesheet" type="text/css" href="../static/styles/baas.css">
     <link rel="stylesheet" type="text/css" href="../static/styles/koduleht.css">
     <link rel="stylesheet" type="text/css" href="../static/styles/kontrollpaneel.css">
@@ -50,7 +50,7 @@
 
         <div id="kaardid">
             <div class="kaart">
-                <form id="otsija" action="/kodu/1" method="get"> <!-- ei saada kuskile, overridime saatmist ../static/scripts/otsi_faile.js -->
+                <form id="otsija" action="/" method="get"> <!-- ei saada kuskile, overridime saatmist ../static/scripts/otsi_faile.js -->
                     <div class="valjad">
                         <input type="text" name="faili_osaline_nimi" id="faili_osaline_nimi" placeholder="Failinimi">
                         <input type="text" name="sildid" id="sildid" placeholder="Sildid">
@@ -81,7 +81,7 @@
                         </div>
                     </div>
                     <div class="nupud">
-                        <button type="submit" style="--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst );">Otsi</button>
+                        <button id="otsi_saada" type="submit" style="--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst );">Otsi</button>
                         <button type="reset" style="--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --taust-tavaline ) ">Tühjenda</button>
                     </div>
                 </form>
@@ -90,14 +90,14 @@
             {% if meediafailid %}
             {% for fail in meediafailid %}
                 <div class="kaart failikaart">
-                    <a class="faili_link {% if fail.tuup == 'mp4' %}video_link{% endif %}" href="/fail/{{ fail.unikaalne_nimi }}">
+                    <a class="faili_link {% if fail.tuup == 'mp4' %}video_link{% endif %}{% if fail.tuup == 'gif' %}gif_link{% endif %}" href="/fail/{{ fail.unikaalne_nimi }}">
                         {% if fail.tuup == 'mp4' %}
                             <video preload="auto">
                                 <source src="/fail/{{ fail.unikaalne_nimi }}" type="video/{{ fail.tuup }}">
                                 Teie brauser ei toeta videosilti.
                             </video>
                         {% else %}
-                            <img class="esituspilt" src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
+                            <img loading="lazy" class="esituspilt" src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
                         {% endif %}
                     </a>
                     <p class="nimi">{{ fail.nimi }}.{{ fail.tuup }}</p>
@@ -119,13 +119,6 @@
             {% endfor %}
             {% endif %}
         </div>
-        {% if lehed > 1 %}
-           <div class="lehitseja">
-                {% for i in range( lehed ) %}
-                    <a href="/kodu/{{ i + 1 }}" class="{{ 'aktiivne' if lehenumber == i else '' }}">{{ i + 1 }}</a>
-                {% endfor %}
-           </div>
-        {% endif %}
     </div>
 </body>
 </html>
