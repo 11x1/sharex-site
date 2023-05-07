@@ -11,11 +11,16 @@ from parooli_kontroll import kontrolli_parool
 from kasutaja import Kasutaja
 
 Veebileht = Flask( __name__ )
+
+andmebaasi_fail = open( 'sql_config.json', 'r' )
+andmebaasi_andmed = json.load( andmebaasi_fail )
+andmebaasi_fail.close( )
+
 Andmebaas = AndmebaasiSild(
-    kasutajanimi    = 'root',
-    parool          = '',
-    andmebaas       = 'sharex_site',
-    host            = 'localhost'
+    kasutajanimi    = andmebaasi_andmed[ 'kasutajanimi' ],
+    parool          = andmebaasi_andmed[ 'parool' ],
+    andmebaas       = andmebaasi_andmed[ 'andmebaas' ],
+    host            = andmebaasi_andmed[ 'host' ]
 )
 
 PRAEGUNE_KAUST = os.path.dirname(os.path.abspath(__file__))
@@ -343,11 +348,16 @@ def tagasta_sharexi_config( ):
 
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], api_voti )
 
+    url = request.base_url  # siin saame 'http(s)://url/sharexi_konfiguratsioon' sest request route on /sharexi_konfiguratsioon
+
+    # saaks strip-i kasutada aga testimise jarel kaotas see ka http alguse
+    url = '/'.join( url.split( '/' )[ :-1 ] ) + url_for( "meediafailide_vastuvotja" )  # url mis on valmis seattud vast votma uleslaadimisi
+
     return {
         "Name": "localhost uploader",
-        "DestinationType": "ImageUploader, TextUploader, FileUploader",
+        "DestinationType": "ImageUploader, FileUploader",
         "RequestMethod": "POST",
-        "RequestURL": "http://127.0.0.1:5000" + url_for( 'meediafailide_vastuvotja' ),
+        "RequestURL": url,
         "Headers": {
             "Authorization": kasutaja.api_voti
         },
