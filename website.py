@@ -11,7 +11,12 @@ from parooli_kontroll import kontrolli_parool
 from kasutaja import Kasutaja
 
 Veebileht = Flask( __name__ )
-Andmebaas = AndmebaasiSild( 'root', '', 'sharex_site', 'localhost' )
+Andmebaas = AndmebaasiSild(
+    kasutajanimi    = 'root',
+    parool          = '',
+    andmebaas       = 'sharex_site',
+    host            = 'localhost'
+)
 
 PRAEGUNE_KAUST = os.path.dirname(os.path.abspath(__file__))
 ULESLAADIMISTE_KAUST = os.path.join( PRAEGUNE_KAUST, 'uleslaadimised' ) + '/'
@@ -29,35 +34,19 @@ def loo_json_tagastus( staatus, sonum, suund ):
         'suund': suund
     } )
 
-# Funktsioon, et kontrollida kas kasutaja on sisse logitud
 def on_sisse_logitud( ) -> bool:
     api_voti = request.cookies.get( 'api_voti' )
     if api_voti is None:
         return False
     return Andmebaas.kas_api_voti_on_legaalne( api_voti )
 
+def suuna_pealehele( ):
+    return make_response( redirect( url_for( 'index' ) ) )
 
-# Püütonid decorator
-# Loodud selleks et vähendada koodi kirjutamist funktsioonides, mis nõuavad et kasutaja on sisse logitud
-def peab_olema_sisse_logitud( funktsioon ):
-    def kontrollija( *args, **kwargs ):
-        if on_sisse_logitud( ):
-            funktsioon( args, kwargs )
-
-        tagastus = make_response( redirect( url_for( 'sisselogimine' ) ) )
-        tagastus = kustuta_kupsised( tagastus )
-        return tagastus
-    return kontrollija
-
-def pealeht_kui_kasutaja_on_sisse_loginud( funktsioon ):
-    def kontrollija( *args, **kwargs ):
-        if on_sisse_logitud( ):
-            tagastus = make_response( redirect( url_for( 'index' ) ) )
-            tagastus = kustuta_kupsised( tagastus )
-            return tagastus
-
-        funktsioon( args, kwargs )
-    return kontrollija
+def logi_valja( ) -> Response:
+    tagastus = make_response(redirect(url_for('sisselogimine')))
+    tagastus = kustuta_kupsised(tagastus)
+    return tagastus
 
 def leia_kupsised( ) -> dict:
     kupsised = list( request.cookies.items( ) )
@@ -225,9 +214,11 @@ def api_login( ):
 
     return kupsiste_haldaja
 
-@peab_olema_sisse_logitud
 @Veebileht.post( '/api/otsi' )
 def api_otsi( ):
+    if not on_sisse_logitud( ):
+        return logi_valja( )
+
     failinimi = request.form.get( 'failinimi' )
     sildid = request.form.get( 'sildid' )
     tuubid = request.form.get( 'tuup' ).split( '|' )
@@ -244,9 +235,11 @@ def api_otsi( ):
 
     return jsonify( failid_json )
 
-@peab_olema_sisse_logitud
 @Veebileht.post( '/api/kustuta_fail/' )  # Saaks teah samamoodi nagu on /kustuta_veateade aga
 def api_kustuta_fail( ):
+    if not on_sisse_logitud( ):
+        return logi_valja( )
+
     eriline_faili_nimi = request.form.get( 'faili_eriline_nimi' )
     faili_eriline_nimi = escape( eriline_faili_nimi )
 
@@ -268,9 +261,11 @@ def api_kustuta_fail( ):
 
     return loo_json_tagastus( 200, 'Fail kustutatud', '/' )
 
-@peab_olema_sisse_logitud
 @Veebileht.post( '/api/kustuta_kasutaja/' )
 def api_kustuta_kasutaja( ):
+    if not on_sisse_logitud( ):
+        return logi_valja( )
+
     api_voti = leia_kupsised( ).get( 'api_voti' )
 
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ "api_voti" ], api_voti )
@@ -308,23 +303,28 @@ def api_kustuta_heateade( ):
     tagastus = sea_kupsis( tagastus, 'heateade', '' )
     return tagastus
 
-@pealeht_kui_kasutaja_on_sisse_loginud
 @Veebileht.get( '/sisselogimine' )
 def sisselogimine( ):
+    if on_sisse_logitud( ):
+        return suuna_pealehele( )
+
     kupsised = leia_kupsised( )
     return render_template( 'sisselogimine.html', kupsised=kupsised )
 
-@pealeht_kui_kasutaja_on_sisse_loginud
 @Veebileht.get( '/registreeri' )
 def registreeri( ):
+    if on_sisse_logitud( ):
+        return suuna_pealehele( )
+
     kupsised = leia_kupsised( )
     return render_template( 'registreeri.html', kupsised=kupsised )
 
-@peab_olema_sisse_logitud
 @Veebileht.get( '/' )
 def index( ):
-    kupsised = leia_kupsised( )
+    if not on_sisse_logitud( ):
+        return logi_valja( )
 
+    kupsised = leia_kupsised( )
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], kupsised.get( 'api_voti' ) )
 
     meediafailid = leia_failid( 1, kasutaja, '%', '', [ 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'gif' ] )
@@ -334,9 +334,11 @@ def index( ):
                             kasutaja=kasutaja,
                             meediafailid=meediafailid[ :-1 ] )
 
-@peab_olema_sisse_logitud
 @Veebileht.get( '/sharexi_konfiguratsioon' )
 def tagasta_sharexi_config( ):
+    if not on_sisse_logitud( ):
+        return logi_valja( )
+
     api_voti = request.cookies.get( 'api_voti' )
 
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], api_voti )

@@ -91,7 +91,7 @@ class AndmebaasiSild:
             )
 
             looja = uhendus.cursor( )
-            looja.execute( f'CREATE DATABASE %(andmebaas)s', { 'andmebaas': self.andmebaas } )
+            looja.execute( f'CREATE DATABASE `{ self.andmebaas }`' )
             log( f'Loodi andmebaas { self.andmebaas }' )
 
             looja.close( )

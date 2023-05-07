@@ -18,6 +18,8 @@ const loo_kaart = (  unikaalne_nimi, nimi, tuup  ) => {
         video.appendChild( video_src )
         faili_link.appendChild( video )
     } else {
+        if ( tuup === 'gif' )
+            faili_link.classList.add( 'gif_link' )
         const pilt = document.createElement( 'img' )
         pilt.classList.add( 'esituspilt' )
         pilt.src = `/fail/${ unikaalne_nimi }`

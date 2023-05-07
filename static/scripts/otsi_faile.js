@@ -34,8 +34,7 @@ const otsi_faile = ( lehe_nr ) => {
         }
     }
 
-    if ( failinimi === '' || !otsitakse )
-        failinimi = '%'
+    failinimi = '%' + failinimi + '%'
 
     let otsija = new XMLHttpRequest( )
     otsija.open( 'POST', '/api/otsi' )

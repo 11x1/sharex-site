@@ -94,6 +94,10 @@
     margin-top: 2px;
 }
 
+.kaart .nupud button:hover {
+    cursor: pointer;
+}
+
 .failikaart img.esituspilt,
 .failikaart video {
     position: relative;
@@ -142,6 +146,7 @@
     object-fit: cover;
 
     filter: blur( 1px );
+    cursor: pointer;
 }
 
 .failikaart .nimi {
