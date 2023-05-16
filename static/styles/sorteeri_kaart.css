@@ -1,0 +1,79 @@
+.kaart__sorteeri {
+    display: flex;
+    flex-direction: column;
+
+    height: 73.5%;
+    background-color: var( --fail__taust );
+
+    border-radius: var( --umardus );
+
+    padding: 1rem;
+}
+
+.kaart__sorteeri form {
+    display: flex;
+    flex-direction: column;
+
+    aspect-ratio: 3 / 4;
+}
+
+.kaart__sorteeri .valjad {
+    display: flex;
+    flex-direction: column;
+
+    gap: 20px;
+}
+
+.kaart__sorteeri .valjad input {
+    border: none;
+    background: transparent;
+
+    font-size: 1.2rem;
+    color: var( --tekst );
+
+    border-bottom: var( --fail__link ) solid 2px;
+}
+
+.tuup p {
+    color: var( --tekst );
+}
+
+.kaart__sorteeri .tuubid {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+
+    font-size: 24px;
+}
+
+.kaart__sorteeri .nupud {
+    display: flex;
+    flex-direction: row-reverse;
+
+    gap: 10px;
+
+    margin-top: auto;
+    margin-bottom: 0;
+}
+
+.kaart__sorteeri .nupud button {
+    border: var( --aaris_kaart ) 1px solid;
+    border-radius: calc( var( --umardus ) / 2 );
+    background: var( --taust_kaart );
+    color: var( --tekst_kaart );
+    padding: 5px 10px;
+    width: min-content;
+}
+
+.kaart__sorteeri .nupud form {
+    max-width: fit-content;
+}
+
+.kaart__sorteeri .nupud button:hover {
+    cursor: pointer;
+}
+
+.kaart__sorteeri a {
+    position: relative;
+    display: block;
+}

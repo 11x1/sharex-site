@@ -1,5 +1,5 @@
 body {
-    background: var( --taust-tavaline );
+    background: var( --taust );
     background-size: cover;
 }
 
@@ -23,10 +23,10 @@ form {
 
     padding: 10px;
 
-    border: 3px var( --peamine ) solid;
+    border: 3px var( --fail__link ) solid;
     border-radius: var( --umardus );
 
-    background: var( --taust-peamine );
+    background: var( --fail__link );
     backdrop-filter: blur( var( --hagusus ) );
 
     gap: 10px;
@@ -40,10 +40,10 @@ form div.valjad {
 }
 
 form input {
-    border: 2px var( --peamine ) solid;
+    border: 2px var( --fail__link ) solid;
     border-radius: calc( var( --umardus ) / 2) ;
 
-    background: var( --taust-peamine );
+    background: var( --taust );
     height: 20px;
 
     color: var( --tekst );
@@ -69,10 +69,10 @@ form input:nth-child( 2 ) {
 
 form button,
 div.lisanupp button {
-    border: 2px var( --peamine ) solid;
+    border: 2px var( --fail__link ) solid;
     border-radius: calc( var( --umardus ) / 2);
 
-    background: var( --taust-peamine );
+    background: var( --taust );
 
     transition-duration: 200ms;
 
@@ -82,8 +82,8 @@ div.lisanupp button {
 
 form button:hover,
 div.lisanupp button:hover  {
-    border: 2px var(--peamine-hele) solid;
-    background: var(--taust-peamine-hele);
+    border: 2px var( --nupp__taust__aktiivne ) solid;
+    background: var( --nupp__taust__aktiivne );
 }
 
 .lisanupp {

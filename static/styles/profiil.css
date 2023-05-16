@@ -1,0 +1,115 @@
+#profiil {
+    display: flex;
+    flex-direction: column;
+
+
+    width: 100%;
+    height: 98vh; /* Pole soovitatud nii teha */
+
+    justify-content: center;
+    align-items: center;
+
+    margin: auto;
+
+    gap: 2rem;
+
+    max-width: 250px;
+
+}
+
+.aken {
+    background: var( --fail__taust );
+
+    padding: 2rem;
+    border-radius: 10px;
+
+    width: 100%;
+}
+
+.sharex button {
+    background-color: var( --fail__link );
+    width: 100%;
+    height: 2rem;
+
+    font-weight: 600;
+    font-size: 1rem;
+
+    border: none;
+    border-radius: 10px;
+
+    color: var( --fail__tiitel );
+
+    transition: background-color 200ms,
+                box-shadow 200ms;
+}
+
+.sharex button:hover {
+    background-color: var( --fail__link__aktiivne );
+    box-shadow: 0 0 10px 5px var( --fail__link__aktiivne );
+    cursor: pointer;
+}
+
+form#vaheta_parool {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    align-items: center;
+}
+
+form#vaheta_parool > div {
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+
+    width: 200px;
+
+    color: var( --tekst );
+}
+
+form#vaheta_parool div > * {
+    width: 100%;
+    height: 2rem;
+
+    border: 2px solid var( --fail__link__aktiivne );
+    border-radius: 10px;
+}
+
+.profiil__parool input {
+    background-color: var( --nupp__taust__aktiivne );
+    text-indent: 1rem;
+
+    width: calc( 100% - .5rem ) !important;
+    color: var( --tekst );
+}
+
+.profiil__salvesta button {
+    background-color: var( --nupp__taust );
+    transition: background-color 200ms;
+}
+
+.profiil__salvesta button:hover {
+    background-color: var( --nupp__taust__aktiivne );
+    cursor: pointer;
+}
+
+.kustuta_kasutaja {
+    display: flex;
+    justify-content: center;
+}
+
+#kustuta_kasutaja {
+    width: 200px;
+    height: 2rem;
+
+    background: var( --fail__kustuta );
+    transition: background 200ms;
+    border: none;
+    border-radius: 10px;
+}
+
+#kustuta_kasutaja:hover {
+    background: var( --fail__kustuta__aktiivne );
+    cursor: pointer;
+}

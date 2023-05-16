@@ -1,4 +1,4 @@
-const kustuta_fail = ( failikaart, faili_eriline_nimi ) => {
+function kustuta_fail_wrapper( failikaart, faili_eriline_nimi ) {
     let kustutaja = new XMLHttpRequest( )
     kustutaja.open( 'POST', '/api/kustuta_fail/' )
 
@@ -35,7 +35,7 @@ const kustuta_fail = ( failikaart, faili_eriline_nimi ) => {
         let leht = document.getElementById( 'leht' )
 
         if ( json_tagastus.status === 200 ) {
-            failikaart.remove()
+            failikaart.remove( )
 
             let heateade = loo_heateade( json_tagastus.sonum )
 
@@ -49,20 +49,7 @@ const kustuta_fail = ( failikaart, faili_eriline_nimi ) => {
     }
 }
 
-let failikaardid = document.getElementsByClassName( 'failikaart' )
-
-const sea_kustutamine = ( failikaart ) => {
-    let kustutamise_nupp = failikaart.getElementsByClassName( 'kustuta_fail' ).item( 0 )
-    let link = failikaart.getElementsByClassName( 'faili_link' ).item( 0 ).href
-
-    kustutamise_nupp.onclick = ( _ ) => {
-        let faili_eriline_nimi = link.split( '/' )
-        faili_eriline_nimi = faili_eriline_nimi[ faili_eriline_nimi.length - 1 ]
-
-        kustuta_fail( failikaart, faili_eriline_nimi )
-    }
-}
-
-for ( let failikaart of failikaardid ) {
-    sea_kustutamine( failikaart )
+function kustuta_fail( kustutamise_nupp, eriline_nimi ) {
+    let failikaart = kustutamise_nupp.parentElement.parentElement.parentElement.parentElement.parentElement
+    kustuta_fail_wrapper( failikaart, eriline_nimi )
 }

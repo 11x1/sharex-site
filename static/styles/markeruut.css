@@ -29,11 +29,11 @@
 }
 
 .visuaalne {
-    filter: saturate( 0.4 );
+    filter: saturate( 0 );
 
     border-radius: var( --umardus );
-    border: var( --peamine ) solid 2px;
-    background: var( --taust-peamine );
+    border: var( --nupp__taust__aktiivne ) solid 2px;
+    background: var( --fail__link );
 
     padding: 5px 10px;
 
@@ -42,4 +42,13 @@
 
 .markeruut input:checked ~ .visuaalne {
     filter: saturate( 1 );
+}
+
+.visuaalne p {
+    margin: 0;
+    padding: 0;
+
+    color: #dddddd;
+    font-size: 1.2rem;
+    margin: 10px 0;
 }

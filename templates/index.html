@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
 
-    <title>Koduleht - {{ kasutaja.nimi }}</title>
+    <title>Tere, {{ kasutaja.nimi }}!</title>
     <link rel="stylesheet" type="text/css" href="../static/styles/baas.css">
-    <link rel="stylesheet" type="text/css" href="../static/styles/koduleht.css">
-    <link rel="stylesheet" type="text/css" href="../static/styles/kontrollpaneel.css">
     <link rel="stylesheet" type="text/css" href="../static/styles/markeruut.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/navigatsioon.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/sorteeri_kaart.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/failikaart.css">
 
     <script src="../static/scripts/modules/loo_teade.js"></script>
     <script src="../static/scripts/modules/loo_kaart.js"></script>
@@ -16,19 +17,25 @@
     <script src="../static/scripts/kopeeri_faili_link.js" defer></script>
     <script src="../static/scripts/kustuta_veateade.js" defer></script>
     <script src="../static/scripts/kustuta_heateade.js" defer></script>
-    <script src="../static/scripts/kustuta_kasutaja.js" defer></script>
     <script src="../static/scripts/otsi_faile.js" defer></script>
 </head>
 <body>
-    <div id="kontrollpaneel">
-        {% if kupsised %}
-            {{ kupsised }}
-        {% endif %}
+    {% if kupsised %}
+        {{ kupsised }}
+    {% endif %}
 
-        <a role="button" href="/sharexi_konfiguratsioon" download="config.sxcu"><button>lae alla sharexi cfg</button></a>
-        <a role="button" href="/logout"><button>logi valja</button></a>
-        <button id="kustuta_kasutaja">Kustuta kasutaja</button>
-    </div>
+    <section id="navigatsioon">
+        <ul>
+            <li>
+                <a href="/profiil">Profiil</a>
+            </li>
+
+            <li>
+                <a href="/logout">Logi välja</a>
+            </li>
+        </ul>
+    </section>
+
     <div id="leht">
         {% if kupsised[ 'veateade' ] %}
             <div class="veateade">
@@ -49,7 +56,7 @@
         {% endif %}
 
         <div id="kaardid">
-            <div class="kaart">
+            <div class="kaart__sorteeri">
                 <form id="otsija" action="/" method="get"> <!-- ei saada kuskile, overridime saatmist ../static/scripts/otsi_faile.js -->
                     <div class="valjad">
                         <input type="text" name="faili_osaline_nimi" id="faili_osaline_nimi" placeholder="Failinimi">
@@ -81,38 +88,49 @@
                         </div>
                     </div>
                     <div class="nupud">
-                        <button id="otsi_saada" type="submit" style="--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst );">Otsi</button>
-                        <button type="reset" style="--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --taust-tavaline ) ">Tühjenda</button>
+                        <button id="otsi_saada" type="submit" style="--aaris_kaart: black; --taust_kaart: var( --taust_kaart ); --tekst_kaart: var( --tekst );">Otsi</button>
+                        <button id="otsi_tuhjenda" type="reset" style="--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --tekst ) ">Tühjenda</button>
                     </div>
                 </form>
             </div>
 
             {% if meediafailid %}
             {% for fail in meediafailid %}
-                <div class="kaart failikaart">
-                    <a class="faili_link {% if fail.tuup == 'mp4' %}video_link{% endif %}{% if fail.tuup == 'gif' %}gif_link{% endif %}" href="/fail/{{ fail.unikaalne_nimi }}">
-                        {% if fail.tuup == 'mp4' %}
-                            <video preload="auto">
-                                <source src="/fail/{{ fail.unikaalne_nimi }}" type="video/{{ fail.tuup }}">
-                                Teie brauser ei toeta videosilti.
-                            </video>
-                        {% else %}
-                            <img loading="lazy" class="esituspilt" src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
-                        {% endif %}
-                    </a>
-                    <p class="nimi">{{ fail.nimi }}.{{ fail.tuup }}</p>
-                    <div class="sildid-ja-nupud">
-                        <div class="sildid">
+                <div class="kaart">
+                    <div class="fail__esipilt">
+                        <a href="/fail/{{ fail.unikaalne_nimi }}" class="{% if fail.tuup == 'mp4' %}video_link{% endif %}{% if fail.tuup == 'gif' %}gif_link{% endif %}">
+                            {% if fail.tuup == 'mp4' %}
+                                <video preload="auto">
+                                    <source src="/fail/{{ fail.unikaalne_nimi }}" type="video/{{ fail.tuup }}">
+                                    Teie brauser ei toeta videosilti.
+                                </video>
+                            {% else %}
+                                <img loading="lazy" src="/fail/{{ fail.unikaalne_nimi }}" alt="{{ fail.nimi }}">
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="fail__info">
+                        <div class="fail__tiitel">
+                            <div class="fail__nimi">
+                                <p>{{ fail.nimi }}</p>
+                            </div>
+                            <div class="fail__ilus">
 
+                            </div>
                         </div>
-                        <div class="nupud">
-                            <button class="kustuta_fail" style="--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --taust-tavaline )">
-                                <img src="./../static/assets/trash.svg" alt="Kustuta">
-                            </button>
-
-                            <button class="kopeeri_link" style="--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst );">
-                                <img src="./../static/assets/link.svg" alt="Kopeeri link">
-                            </button>
+                        <div class="fail__juhend">
+                            <div class="fail__andmed">
+                                <p>{{ fail.suurus }}kb</p>
+                                <p>{{ fail.tuup.upper( ) }}</p>
+                            </div>
+                            <div class="fail__nupud">
+                                <div class="fail__kopeerilink">
+                                    <button onclick="sea_kopeerimine( this )">🔗</button>
+                                </div>
+                                <div class="fail__kustuta">
+                                    <button onclick="kustuta_fail( this, '{{ fail.unikaalne_nimi }}' )">🗑️</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

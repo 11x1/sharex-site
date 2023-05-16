@@ -339,6 +339,18 @@ def index( ):
                             kasutaja=kasutaja,
                             meediafailid=meediafailid[ :-1 ] )
 
+@Veebileht.get( '/profiil' )
+def profiil( ):
+    if not on_sisse_logitud( ):
+        return logi_valja( )
+
+    kupsised = leia_kupsised( )
+    kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], kupsised.get( 'api_voti' ) )
+
+    return render_template( 'profiil.html',
+                            kupsised=kupsised,
+                            kasutaja=kasutaja )
+
 @Veebileht.get( '/sharexi_konfiguratsioon' )
 def tagasta_sharexi_config( ):
     if not on_sisse_logitud( ):

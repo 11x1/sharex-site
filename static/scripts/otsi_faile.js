@@ -63,7 +63,7 @@ const otsi_faile = ( lehe_nr ) => {
             if ( faililugeja >= json_tagastus.length - 1 )
                 break // 12 on limiit praegu, viimane 13 element sisaldab infot lehtede kohta
 
-            let uus_kaart = loo_kaart( tagastus_obj.unikaalne_nimi, tagastus_obj.nimi, tagastus_obj.tuup )
+            let uus_kaart = loo_kaart( tagastus_obj.unikaalne_nimi, tagastus_obj.nimi, tagastus_obj.tuup, tagastus_obj.suurus )
 
             kaardid.append( uus_kaart )
             faililugeja += 1
@@ -122,8 +122,8 @@ otsija_vorm.onreset = _ => {
 localStorage.setItem( 'otsi_lehe_nr', '1' )
 
 window.onscroll = _ => {
-    // leiame jargmised, kui kasutaja on kerinud lehe loppu
     let peaks_leidma_uued = ( document.body.clientHeight - 20 ) <= ( document.scrollingElement.scrollTop + window.innerHeight )
+
     let praegune_lehe_nr = localStorage.getItem( 'otsi_lehe_nr' )
 
     if ( praegune_lehe_nr === '0' || !peaks_leidma_uued )

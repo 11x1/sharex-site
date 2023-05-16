@@ -1,77 +1,94 @@
-const loo_kaart = (  unikaalne_nimi, nimi, tuup  ) => {
-    const kaart_div = document.createElement( 'div' )
-    kaart_div.classList.add( 'kaart', 'failikaart' )
+const loo_kaart = ( unikaalne_nimi, nimi, tuup, suurus_bitid ) => {
+    const suurus = suurus_bitid / 8000;
+    
+    const kaart_div = document.createElement( 'div' );
+    kaart_div.classList.add( 'kaart' );
 
-    const faili_link = document.createElement( 'a' )
-    faili_link.classList.add( 'faili_link' )
-    faili_link.href = `/fail/${ unikaalne_nimi }`
+    const fail__esipilt = document.createElement( 'div' );
+    fail__esipilt.classList.add( 'fail__esipilt' );
 
-    if ( tuup === 'mp4' ) {
-        faili_link.classList.add( 'video_link' )
-        const video = document.createElement( 'video' )
-        video.preload = 'auto'
+    const fail__link = document.createElement( 'a' );
+    fail__link.href = `/fail/${ unikaalne_nimi }`;
 
-        const video_src = document.createElement( 'source' )
-        video_src.src = `/fail/${ unikaalne_nimi }`
-        video_src.type = `video/${ tuup }`
-
-        video.appendChild( video_src )
-        faili_link.appendChild( video )
-    } else {
-        if ( tuup === 'gif' )
-            faili_link.classList.add( 'gif_link' )
-        const pilt = document.createElement( 'img' )
-        pilt.classList.add( 'esituspilt' )
-        pilt.src = `/fail/${ unikaalne_nimi }`
-        pilt.alt = nimi
-
-        faili_link.appendChild( pilt )
+    if (  tuup === 'mp4'  ) {
+      fail__link.classList.add( 'video_link' );
+    } else if (  tuup === 'gif'  ) {
+      fail__link.classList.add( 'gif_link' );
     }
 
+    if (  tuup === 'mp4'  ) {
+      const video = document.createElement( 'video' );
+      video.setAttribute( 'preload', 'auto' );
+      const allikas = document.createElement( 'source' );
+      allikas.src = `/fail/${ unikaalne_nimi }`;
+      allikas.type = `video/${ tuup }`;
+      const video_veatekst = document.createTextNode( 'Teie brauser ei toeta videosilti.' );
+      video.appendChild( allikas );
+      video.appendChild( video_veatekst );
+      fail__link.appendChild( video );
+    } else {
+      const pilt = document.createElement( 'img' );
+      pilt.setAttribute( 'loading', 'lazy' );
+      pilt.src = `/fail/${ unikaalne_nimi }`;
+      pilt.alt = nimi;
+      fail__link.appendChild( pilt );
+    }
+    fail__esipilt.appendChild( fail__link );
 
-    kaart_div.appendChild( faili_link )
+    const fail__info = document.createElement( 'div' );
+    fail__info.classList.add( 'fail__info' );
 
-    const nimi_p = document.createElement( 'p' )
-    nimi_p.classList.add( 'nimi' )
-    nimi_p.textContent = `${ nimi }.${ tuup }`
-    kaart_div.appendChild( nimi_p )
+    const fail__tiitel = document.createElement( 'div' );
+    fail__tiitel.classList.add( 'fail__tiitel' );
+    const fail__nimi = document.createElement( 'div' );
+    fail__nimi.classList.add( 'fail__nimi' );
+    const nimi_tekst = document.createElement( 'p' );
+    nimi_tekst.textContent = nimi;
+    fail__nimi.appendChild( nimi_tekst );
+    const fail__ilus = document.createElement( 'div' );
+    fail__ilus.classList.add( 'fail__ilus' );
+    fail__tiitel.appendChild( fail__nimi );
+    fail__tiitel.appendChild( fail__ilus );
 
-    const sildid_ja_nupud = document.createElement( 'div' )
-    sildid_ja_nupud.classList.add( 'sildid-ja-nupud' )
+    const fail__juhend = document.createElement( 'div' );
+    fail__juhend.classList.add( 'fail__juhend' );
+    const fail__andmed = document.createElement( 'div' );
+    fail__andmed.classList.add( 'fail__andmed' );
+    const andmed__suurus = document.createElement( 'p' );
+    andmed__suurus.textContent = suurus.toString(   );
+    const andmed__tuup = document.createElement( 'p' );
+    andmed__tuup.textContent = tuup.toUpperCase(  );
+    fail__andmed.appendChild( andmed__suurus );
+    fail__andmed.appendChild( andmed__tuup );
 
-    const sildid = document.createElement( 'div' )
-    sildid.classList.add( 'sildid' )
-    sildid_ja_nupud.appendChild( sildid )
+    const fail__nupud = document.createElement( 'div' );
+    fail__nupud.classList.add( 'fail__nupud' );
+    
+    const fail__kopeerilink = document.createElement( 'div' );
+    fail__kopeerilink.classList.add( 'fail__kopeerilink' );
+    const kopeerilink_nupp = document.createElement( 'button' );
+    kopeerilink_nupp.setAttribute( 'onclick', 'sea_kopeerimine( this )' );
+    kopeerilink_nupp.textContent = '🔗';
+    fail__kopeerilink.appendChild( kopeerilink_nupp );
 
-    const nupud = document.createElement( 'div' )
-    nupud.classList.add( 'nupud' )
+    const fail__kustuta = document.createElement( 'div' );
+    fail__kustuta.classList.add( 'fail__kustuta' );
+    const kustuta_nupp = document.createElement( 'button' );
+    kustuta_nupp.setAttribute( 'onclick', `kustuta_fail( this, ${ unikaalne_nimi } )` );
+    kustuta_nupp.textContent = '🗑️';
+    fail__kustuta.appendChild( kustuta_nupp );
 
-    const kustuta_fail_nupp = document.createElement( 'button' )
-    kustuta_fail_nupp.classList.add( 'kustuta_fail' )
-    kustuta_fail_nupp.style = '--aaris_kaart: var( --viga ); --taust_kaart: var( --viga ); --tekst_kaart: var( --taust-tavaline )'
+    fail__juhend.appendChild( fail__andmed );
+    fail__juhend.appendChild( fail__nupud );
 
-    const kustuta_fail_pilt = document.createElement( 'img' )
-    kustuta_fail_pilt.src = './../static/assets/trash.svg'
-    kustuta_fail_pilt.alt = 'Kustuta'
-    kustuta_fail_nupp.appendChild( kustuta_fail_pilt )
-    nupud.appendChild( kustuta_fail_nupp )
+    fail__tiitel.appendChild( fail__nimi );
+    fail__tiitel.appendChild( fail__ilus );
 
-    const kopeeri_link_nupp = document.createElement( 'button' )
-    kopeeri_link_nupp.classList.add( 'kopeeri_link' )
-    kopeeri_link_nupp.style = '--aaris_kaart: black; --taust_kaart: var( --taust-peamine ); --tekst_kaart: var( --tekst )'
+    fail__info.appendChild( fail__tiitel );
+    fail__info.appendChild( fail__juhend );
 
-    const kopeeri_link_pilt = document.createElement( 'img' )
-    kopeeri_link_pilt.src = './../static/assets/link.svg'
-    kopeeri_link_pilt.alt = 'Kopeeri link'
-
-    kopeeri_link_nupp.appendChild( kopeeri_link_pilt )
-    nupud.appendChild( kopeeri_link_nupp )
-
-    sildid_ja_nupud.appendChild( nupud )
-    kaart_div.appendChild( sildid_ja_nupud )
-
-    sea_kopeerimine( kaart_div )
-    sea_kustutamine( kaart_div )
+    kaart_div.appendChild( fail__esipilt );
+    kaart_div.appendChild( fail__info );
 
     return kaart_div
 }

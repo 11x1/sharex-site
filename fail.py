@@ -1,9 +1,10 @@
 class Fail:
-    def __init__( self, id_, nimi, unikaalne_nimi, failituup ):
+    def __init__( self, id_, nimi, unikaalne_nimi, failituup, suurus_bitid=None ):
         self.id = id_
         self.nimi = nimi
         self.unikaalne_nimi = unikaalne_nimi
         self.tuup = failituup
+        self.suurus = round( suurus_bitid / 8000, 2 ) if suurus_bitid is not None else round( 45678 / 8000, 2 )
         self.on_olemas = False
 
         if None in ( id_, nimi, unikaalne_nimi, failituup ):
@@ -16,7 +17,8 @@ class Fail:
         return {
             'nimi'          : self.nimi,
             'unikaalne_nimi': self.unikaalne_nimi,
-            'tuup'          : self.tuup
+            'tuup'          : self.tuup,
+            'suurus'        : self.suurus
         }
 
     def __str__( self ) -> str:

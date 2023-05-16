@@ -1,0 +1,40 @@
+#navigatsioon {
+    display: flex;
+    flex-direction: row;
+
+
+    justify-content: center;
+    align-items: center;
+}
+
+#navigatsioon ul {
+    display: flex;
+    flex-direction: row;
+
+    list-style: none;
+
+    gap: 10px;
+}
+
+#navigatsioon ul li a {
+    text-decoration: none;
+    color: var( --tekst );
+
+    background: var( --nupp__taust );
+
+    padding: .5rem 1rem;
+    border-radius: 10px;
+
+    transition: background 200ms,
+                box-shadow 200ms;
+}
+
+#navigatsioon ul li a:hover {
+    background-color: var( --nupp__taust__aktiivne );
+    box-shadow: 0 0 10px 5px var( --nupp__taust__aktiivne );
+}
+
+#navigatsioon ul li:last-child:hover a {
+    background: var( --nupp__taust__hoiatus );
+    box-shadow: 0 0 10px 5px var( --nupp__taust__hoiatus );
+}

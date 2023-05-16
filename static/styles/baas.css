@@ -1,25 +1,31 @@
-* {
-    --peamine: #5555ff;
-    --peamine-hele: #6666ff;
+:root {
+    --taust: #222020;
+    --tekst: #bebebe;
+    --nupp__taust: #434343;
+    --nupp__taust__aktiivne: #656565;
+    --nupp__taust__hoiatus: #dd3434;
+
+    --fail__taust: #353535;
+    --fail__tiitel: #dddddd;
+    --fail__tekst: #898989;
+    --fail__link: #5a5ac1;
+    --fail__link__aktiivne: #6b6bd4;
+    --fail__kustuta: #616161;
+    --fail__kustuta__aktiivne: #de6666;
+
+    --umardus: 10px;
+
     --viga: red;
     --hea: green;
+    --hagusus: 3px;
+}
 
-    --taust-peamine: #5555ff40;
-    --taust-peamine-hele: #7777ff60;
-    --taust-viga: #ff000040;
-    --taust-hea: #00ff0040;
-    --taust-tavaline: #3d3d3d;
-
-    --umardus: 20px;
-    --hagusus: 20px;
-
-    --tekst: #dddddd;
+* {
+    font-family: 'Segoe UI';
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    background: var( --taust-tavaline );
+    background: var( --taust );
 }
 
 .veateade {
@@ -27,7 +33,7 @@ body {
     border: var( --viga ) solid 2px;
     border-radius: var( --umardus );
 
-    background: var( --taust-viga );
+    background: var( --fail__taust );
 
     text-align: center;
     backdrop-filter: blur( var( --hagusus ) );
@@ -49,13 +55,13 @@ body {
 .veateade button {
     margin: auto 0;
     border-radius: var( --umardus );
-    border: 2px var( --peamine ) solid;
+    border: 2px var( --viga ) solid;
 
     padding: 3px 6px;
 
     height: min-content;
 
-    background: var( --taust-peamine );
+    background: var( --fail__taust );
 
     filter: saturate( 0.3 );
     transition-duration: 200ms;
@@ -70,5 +76,5 @@ body {
 .veateade.hea {
     color: var( --hea );
     border-color: var( --hea );
-    background: var( --taust-hea );
+    background: var( --taust_kaart );
 }

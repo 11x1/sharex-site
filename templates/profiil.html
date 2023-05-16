@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ kasutaja.nimi }} profiil</title>
+
+    <link rel="stylesheet" href="../static/styles/baas.css" type="text/css">
+    <link rel="stylesheet" href="../static/styles/profiil.css" type="text/css">
+
+    <script src="../static/scripts/kustuta_kasutaja.js" defer></script>
+</head>
+<body>
+    <div class="profiil">
+        <section id="profiil">
+            <div class="aken">
+                <div class="sharex">
+                    <a role="button" href="/sharexi_konfiguratsioon" download="sharex_konfiguratsioon.sxcu">
+                        <button>📥 Sharex'i konfiguratsioon</button>
+                    </a>
+                </div>
+            </div>
+
+            <div class="aken">
+                <form id="vaheta_parool" action="vaheta_parool">
+                    <div class="profiil__nimi">
+                        {{ kasutaja.nimi }}
+                    </div>
+                    <div class="profiil__parool">
+                        <input type="password" placeholder="uus parool">
+                    </div>
+                    <div class="profiil__salvesta">
+                        <button type="submit">💾 Salvesta</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="aken">
+                <div class="kustuta_kasutaja">
+                    <button id="kustuta_kasutaja">Kustuta kasutaja</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
