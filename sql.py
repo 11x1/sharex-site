@@ -401,6 +401,32 @@ class AndmebaasiSild:
         # Tagastame toevaartuse kui kasutaja kustutati edukalt
         return True
 
+    def leia_info( self ) -> dict:
+        andmed = {
+            'kasutajaid': 0,
+            'uleslaadimisi': 0,
+            'maht': 0
+        }
+
+        uhendus = self.uhenda( )
+        otsija = uhendus.cursor( )
+
+        otsija.execute( f'SELECT { LEIA_KASUTAJA[ "api_voti" ] } FROM { TABELI_NIMI[ "kasutajad" ] }' )
+        andmed[ 'kasutajaid' ] = len( otsija.fetchall( ) )
+
+        otsija.execute( f'SELECT kasutaja_id FROM { TABELI_NIMI[ "uleslaadimised" ] }' )
+        andmed[ 'uleslaadimisi' ] = len( otsija.fetchall( ) )
+
+        uleslaadimiste_kaustad = os.listdir( ULESLAADIMISTE_KAUST )
+        for kaust in uleslaadimiste_kaustad:
+            kausta_path = os.path.join( ULESLAADIMISTE_KAUST, kaust )
+            for failinimi in os.listdir( kausta_path ):
+                andmed[ 'maht' ] += os.path.getsize( os.path.join( kausta_path, failinimi ) ) / ( 1024 * 1024 )
+
+        andmed[ 'maht' ] = round( andmed[ 'maht' ], 2 )
+
+        return andmed
+
     def kuva_kasutajad( self ) -> None:
         uhendus = self.uhenda( )
 

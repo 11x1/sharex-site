@@ -13,8 +13,9 @@
 
     <title>Tere, {{ kasutaja.nimi }}!</title>
     <link rel="stylesheet" type="text/css" href="../static/styles/baas.css">
-    <link rel="stylesheet" type="text/css" href="../static/styles/markeruut.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/uleslaadimiste_info.css">
     <link rel="stylesheet" type="text/css" href="../static/styles/navigatsioon.css">
+    <link rel="stylesheet" type="text/css" href="../static/styles/markeruut.css">
     <link rel="stylesheet" type="text/css" href="../static/styles/sorteeri_kaart.css">
     <link rel="stylesheet" type="text/css" href="../static/styles/failikaart.css">
 
@@ -28,6 +29,31 @@
     <script src="../static/scripts/otsi_faile.js" defer></script>
 </head>
 <body>
+    <section id="uleslaadimiste_info">
+        <ul>
+            <li>
+                <div class="info__sedel">
+                    <h3>Kasutajaid</h3>
+                    <h4>{{ andmebaas_info.kasutajaid }}</h4>
+                </div>
+            </li>
+
+            <li>
+                <div class="info__sedel">
+                    <h3>Üleslaadimisi</h3>
+                    <h4>{{ andmebaas_info.uleslaadimisi }}</h4>
+                </div>
+            </li>
+
+            <li>
+                <div class="info__sedel">
+                    <h3>Kogumaht</h3>
+                    <h4>{{ andmebaas_info.maht }}mb</h4>
+                </div>
+            </li>
+        </ul>
+    </section>
+
     <section id="navigatsioon">
         <ul>
             <li>

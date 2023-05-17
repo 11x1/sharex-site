@@ -1,0 +1,41 @@
+#uleslaadimiste_info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 1rem 2rem;
+
+    border-radius: var( --umardus );
+
+    background: var( --fail__taust );
+}
+
+#uleslaadimiste_info ul {
+    margin: 0;
+    padding: 0;
+
+    max-width: 800px;
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    width: 100%;
+    align-items: center;
+
+    list-style: none;
+
+    gap: 1rem;
+
+    color: var( --nupp__taust__aktiivne );
+    font-size: 1rem;
+}
+
+#uleslaadimiste_info li {
+    text-align: center;
+    flex: 0 0 30%;
+}
+
+#uleslaadimiste_info h4 {
+    color: var( --nupp__taust )
+}

@@ -366,8 +366,11 @@ def index( ):
 
     meediafailid = leia_failid( 1, kasutaja, '%', '', [ 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'gif' ] )
 
+    andmebaas_info = Andmebaas.leia_info( )
+
     return render_template( 'index.html',
                             kupsised=kupsised,
+                            andmebaas_info=andmebaas_info,
                             kasutaja=kasutaja,
                             meediafailid=meediafailid[ :-1 ] )
 
