@@ -8,13 +8,14 @@
     border-radius: var( --umardus );
 
     background: var( --fail__taust );
+
+    max-width: 550px;
+    margin: 0 auto;
 }
 
 #uleslaadimiste_info ul {
     margin: 0;
     padding: 0;
-
-    max-width: 800px;
 
     display: flex;
     flex-wrap: wrap;
@@ -27,15 +28,15 @@
 
     gap: 1rem;
 
-    color: var( --nupp__taust__aktiivne );
     font-size: 1rem;
 }
 
 #uleslaadimiste_info li {
     text-align: center;
     flex: 0 0 30%;
+    color: var( --fail__link )
 }
 
 #uleslaadimiste_info h4 {
-    color: var( --nupp__taust )
+    color: var( --nupp__taust__aktiivne );
 }
