@@ -105,8 +105,11 @@ def lae_fail_ules( fail: FileStorage, kasutaja: Kasutaja ) -> dict:
     if not os.path.isdir( kasutaja_kausta_path ):
         os.makedirs( kasutaja_kausta_path )
 
+    url = request.base_url
+    url = '/'.join( url.split( '/' )[ :-1 ] )
+
     fail.save( os.path.join( kasutaja_kausta_path, unikaalne_nimi + f'.{ failituup }' ) )
-    return { 'laeti_ules': True, 'url': 'http://127.0.0.1:5000/fail/' + unikaalne_nimi  }
+    return { 'laeti_ules': True, 'url': url + '/fail/' + unikaalne_nimi  }
 
 def leia_failid( lehe_nr: int, kasutaja: Kasutaja, failinimi: str, sildid, tuubid ):
     limiit = 12

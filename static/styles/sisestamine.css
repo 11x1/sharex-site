@@ -89,3 +89,46 @@ div.lisanupp button:hover  {
 .lisanupp {
     margin-top: 20px;
 }
+
+.tingimused ul {
+    color: var( --tekst );
+    font-size: .8rem;
+    padding: .8rem;
+    margin: 0;
+}
+
+.sharex-tutorial {
+    display: flex;
+    flex-direction: column;
+
+    max-width: 400px;
+    margin-bottom: 10px;
+
+    background: var( --fail__taust );
+    border-radius: var( --umardus );
+
+    color: var( --tekst );
+
+    text-align: center;
+}
+
+.sharex-tutorial h1 {
+    font-size: 1.4rem;
+    padding: .5rem 1rem;
+}
+
+.sharex-tutorial ul {
+    text-align: left;
+}
+
+.sharex-tutorial a {
+    color: var( --fail__link );
+    font-weight: 800;
+
+    transition: color 200ms;
+}
+
+.sharex-tutorial a:hover {
+    color: var( --fail__link__aktiivne );
+    text-shadow: var( --fail__link__aktiivne ) 0 0 10px;
+}
