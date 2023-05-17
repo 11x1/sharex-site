@@ -296,6 +296,22 @@ class AndmebaasiSild:
 
         return kasutaja
 
+    def vaheta_kasutaja_parool( self, kasutaja: Kasutaja, parool ) -> None:
+        uhendus = self.uhenda( )
+
+        krupter = Fernet( kasutaja.api_voti )
+
+        uus_parool = krupter.encrypt( parool.encode( 'utf-8' ) )
+
+        sisestaja = uhendus.cursor( )
+        sisestaja.execute(
+            f'UPDATE { TABELI_NIMI[ "kasutajad" ] } SET { LEIA_KASUTAJA[ "parool" ] } = %(uus_parool)s WHERE { LEIA_KASUTAJA[ "id" ] } = %(kasutaja_id)s',
+            { 'uus_parool': uus_parool, 'kasutaja_id': kasutaja.id }
+        )
+        uhendus.commit( )
+        sisestaja.close( )
+        uhendus.close( )
+
     def loo_fail( self, kasutaja: Kasutaja, failinimi, unikaalne_nimi, failituup ) -> bool:
         # Eeldame, et failinimi on ule vaadatud ja kasutaja on sisse logitud
         uhendus = self.uhenda( )

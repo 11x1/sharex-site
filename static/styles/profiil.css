@@ -113,3 +113,12 @@ form#vaheta_parool div > * {
     background: var( --fail__kustuta__aktiivne );
     cursor: pointer;
 }
+
+#kodu-nupp button {
+    background: var( --nupp__taust );
+}
+
+#kodu-nupp button:hover {
+    background: var( --nupp__taust__aktiivne );
+    box-shadow: 0 0 10px 5px var( --nupp__taust__aktiivne );
+}

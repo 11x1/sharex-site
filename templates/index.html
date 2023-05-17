@@ -20,10 +20,6 @@
     <script src="../static/scripts/otsi_faile.js" defer></script>
 </head>
 <body>
-    {% if kupsised %}
-        {{ kupsised }}
-    {% endif %}
-
     <section id="navigatsioon">
         <ul>
             <li>
@@ -40,7 +36,7 @@
         {% if kupsised[ 'veateade' ] %}
             <div class="veateade">
                 <p>{{ kupsised['veateade'] }}</p>
-                <button id="kustuta_veateade">
+                <button id="kustuta_veateade" onclick="kustuta_veateade( this )">
                     X
                 </button>
             </div>
@@ -49,7 +45,7 @@
         {% if kupsised[ 'heateade' ] %}
             <div class="veateade hea">
                 <p>{{ kupsised['heateade'] }}</p>
-                <button id="kustuta_heateade">
+                <button id="kustuta_heateade" onclick="kustuta_heateade( this )">
                     X
                 </button>
             </div>

@@ -1,4 +1,6 @@
-const kustuta_heateade = ( _ ) => {
+const kustuta_heateade = ( heateade_nupp ) => {
+    let heateade_div = heateade_nupp.parentNode
+
     let kustutaja = new XMLHttpRequest( )
     kustutaja.open( 'GET', '/api/kustuta_heateade' )
     kustutaja.send( )
@@ -12,11 +14,6 @@ const kustuta_heateade = ( _ ) => {
         if ( json_tagastus.status !== 200 )
             return;
 
-        let heateade = document.getElementsByClassName( 'veateade hea' ).item( 0 )
-        heateade.remove( )
+        heateade_div.remove( )
     }
 }
-
-const kustuta_heateade_nupp = document.getElementById( 'kustuta_heateade' )
-if ( kustuta_heateade_nupp !== null )
-    kustuta_heateade_nupp.onclick = kustuta_heateade

@@ -10,7 +10,7 @@ const loo_heateade = ( tekst ) => {
     kustuta_heateade_nupp.id = 'kustuta_heateade'
     kustuta_heateade_nupp.innerText = 'X'
 
-    kustuta_heateade_nupp.onclick = kustuta_heateade
+    kustuta_heateade_nupp.onclick = ( ) => kustuta_heateade( kustuta_heateade_nupp )
 
     heateade.append( tekstielement )
     heateade.append( kustuta_heateade_nupp )
@@ -28,8 +28,7 @@ const loo_veateade = ( tekst ) => {
     let kustuta_veateade_nupp = document.createElement( 'button' )
     kustuta_veateade_nupp.id = 'kustuta_veateade'
     kustuta_veateade_nupp.innerText = 'X'
-
-    kustuta_veateade_nupp.onclick = kustuta_veateade
+    kustuta_veateade_nupp.onclick = ( ) => kustuta_veateade( kustuta_veateade_nupp )
 
     veateade.append( tekstielement )
     veateade.append( kustuta_veateade_nupp )

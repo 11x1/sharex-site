@@ -8,14 +8,41 @@
 
     <link rel="stylesheet" href="../static/styles/baas.css" type="text/css">
     <link rel="stylesheet" href="../static/styles/profiil.css" type="text/css">
+    <link rel="stylesheet" href="../static/styles/navigatsioon.css" type="text/css">
 
     <script src="../static/scripts/kustuta_kasutaja.js" defer></script>
+    <script src="../static/scripts/kustuta_veateade.js" defer></script>
+    <script src="../static/scripts/kustuta_heateade.js" defer></script>
 </head>
 <body>
     <div class="profiil">
+        {% if kupsised[ 'veateade' ] %}
+            <div class="veateade">
+                <p>{{ kupsised['veateade'] }}</p>
+                <button id="kustuta_veateade" onclick="kustuta_veateade( this )">
+                    X
+                </button>
+            </div>
+        {% endif %}
+
+        {% if kupsised[ 'heateade' ] %}
+            <div class="veateade hea">
+                <p>{{ kupsised['heateade'] }}</p>
+                <button id="kustuta_heateade" onclick="kustuta_heateade( this )">
+                    X
+                </button>
+            </div>
+        {% endif %}
+
         <section id="profiil">
             <div class="aken">
                 <div class="sharex">
+                    <a role="button" href="/" id="kodu-nupp">
+                        <button>🏠 Kodu</button>
+                    </a>
+                </div>
+
+                <div class="sharex" style="margin-top: 10px">
                     <a role="button" href="/sharexi_konfiguratsioon" download="sharex_konfiguratsioon.sxcu">
                         <button>📥 Sharex'i konfiguratsioon</button>
                     </a>
@@ -23,12 +50,12 @@
             </div>
 
             <div class="aken">
-                <form id="vaheta_parool" action="vaheta_parool">
+                <form id="vaheta_parool" action="/api/vaheta_parool" method="post">
                     <div class="profiil__nimi">
                         {{ kasutaja.nimi }}
                     </div>
                     <div class="profiil__parool">
-                        <input type="password" placeholder="uus parool">
+                        <input name="uus_parool" type="password" minlength="8" placeholder="uus parool" required>
                     </div>
                     <div class="profiil__salvesta">
                         <button type="submit">💾 Salvesta</button>

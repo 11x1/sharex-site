@@ -12,7 +12,10 @@ from kasutaja import Kasutaja
 
 Veebileht = Flask( __name__ )
 
-andmebaasi_fail = open( 'sql_config.json', 'r' )
+absoluutne_path = os.path.dirname( os.path.abspath( __file__ ) )
+sql_config_path = os.path.join( absoluutne_path, 'sql_config.json' )
+
+andmebaasi_fail = open( sql_config_path, 'r' )
 andmebaasi_andmed = json.load( andmebaasi_fail )
 andmebaasi_fail.close( )
 
@@ -307,6 +310,32 @@ def api_kustuta_heateade( ):
     tagastus = loo_json_tagastus( 200, 'Heateade kustutatud', '/' )
     tagastus = sea_kupsis( tagastus, 'heateade', '' )
     return tagastus
+
+@Veebileht.post( '/api/vaheta_parool' )
+def api_vaheta_parool( ):
+    if not on_sisse_logitud( ):
+        return logi_valja( )
+
+    tagasisuunamine = redirect( url_for( 'profiil' ) )
+
+    uus_parool = request.form.get( 'uus_parool' )
+    api_voti = leia_kupsised( ).get( 'api_voti' )
+
+    kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], api_voti )
+
+    if kasutaja is None:
+        return logi_valja( )
+
+    [ uus_parool_ok, pohjus ] = kontrolli_parool( uus_parool )
+
+    if not uus_parool_ok:
+        tagasisuunamine = sea_kupsis( tagasisuunamine, 'veateade', pohjus )
+        return tagasisuunamine
+
+    Andmebaas.vaheta_kasutaja_parool( kasutaja, uus_parool )
+
+    tagasisuunamine = sea_kupsis( tagasisuunamine, 'heateade', 'Parool vahetati edukalt!' )
+    return tagasisuunamine
 
 @Veebileht.get( '/sisselogimine' )
 def sisselogimine( ):
