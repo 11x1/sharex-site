@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png" href="../static/images/wxcoycc.png">
+
+    <meta property='og:title' content="wxcoy.cc | khey's image host">
+    <meta property='og:image' content="https://wxcoy.cc/fail/7fc21368-0e80-43e4-9e45-a975c4ee5f1e">
+    <meta property='og:description' content="Custom made and open-source ShareX host">
 
     <title>Tere, {{ kasutaja.nimi }}!</title>
     <link rel="stylesheet" type="text/css" href="../static/styles/baas.css">
@@ -23,11 +31,11 @@
     <section id="navigatsioon">
         <ul>
             <li>
-                <a href="/profiil">Profiil</a>
+                <a href="/profiil">👤 Profiil</a>
             </li>
 
             <li>
-                <a href="/logout">Logi välja</a>
+                <a href="/logout">🚪 Logi välja</a>
             </li>
         </ul>
     </section>
@@ -116,7 +124,7 @@
                         </div>
                         <div class="fail__juhend">
                             <div class="fail__andmed">
-                                <p>{{ fail.suurus }}kb</p>
+                                <p>{{ fail.suurus( kupsised[ 'api_voti' ]  ) }}kb</p>
                                 <p>{{ fail.tuup.upper( ) }}</p>
                             </div>
                             <div class="fail__nupud">

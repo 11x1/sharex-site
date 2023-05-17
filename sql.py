@@ -8,7 +8,7 @@ import debug
 from kasutaja import Kasutaja
 from fail import Fail
 
-PRAEGUNE_KAUST = os.path.dirname(os.path.abspath(__file__))
+PRAEGUNE_KAUST = os.path.dirname( os.path.abspath( __file__ ) )
 ULESLAADIMISTE_KAUST = os.path.join( PRAEGUNE_KAUST, 'uleslaadimised' ) + '/'
 
 Logija = debug.Logija( )

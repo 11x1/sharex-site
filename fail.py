@@ -1,14 +1,24 @@
+import os
+from kasutaja import Kasutaja
+
+ULESLAADIMISTE_KAUST = os.path.join( os.path.dirname( os.path.abspath( __file__ ) ), 'uleslaadimised' ) + '/'
+
 class Fail:
     def __init__( self, id_, nimi, unikaalne_nimi, failituup, suurus_bitid=None ):
         self.id = id_
         self.nimi = nimi
         self.unikaalne_nimi = unikaalne_nimi
         self.tuup = failituup
-        self.suurus = round( suurus_bitid / 8000, 2 ) if suurus_bitid is not None else round( 45678 / 8000, 2 )
+        self.suurus_bitid = 45.67
         self.on_olemas = False
 
         if None in ( id_, nimi, unikaalne_nimi, failituup ):
             self.on_olemas = False
+
+    def suurus( self, kasutaja_api_voti: str ):
+        asukoht = os.path.join( ULESLAADIMISTE_KAUST, kasutaja_api_voti, f'{ self.unikaalne_nimi }.{ self.tuup }' )
+        suurus_bitid = os.stat( asukoht ).st_size
+        return round( suurus_bitid / 1000, 2 )
 
     def on_tuhi( self ):
         return self.on_olemas
