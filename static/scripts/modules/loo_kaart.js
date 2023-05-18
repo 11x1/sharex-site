@@ -1,6 +1,4 @@
-const loo_kaart = ( unikaalne_nimi, nimi, tuup, suurus_bitid ) => {
-    const suurus = suurus_bitid / 8000;
-    
+const loo_kaart = ( unikaalne_nimi, nimi, tuup, suurus ) => {
     const kaart_div = document.createElement( 'div' );
     kaart_div.classList.add( 'kaart' );
 
@@ -55,7 +53,7 @@ const loo_kaart = ( unikaalne_nimi, nimi, tuup, suurus_bitid ) => {
     const fail__andmed = document.createElement( 'div' );
     fail__andmed.classList.add( 'fail__andmed' );
     const andmed__suurus = document.createElement( 'p' );
-    andmed__suurus.textContent = suurus.toString(   );
+    andmed__suurus.textContent = suurus.toString(   ) + 'kb';
     const andmed__tuup = document.createElement( 'p' );
     andmed__tuup.textContent = tuup.toUpperCase(  );
     fail__andmed.appendChild( andmed__suurus );
@@ -63,7 +61,7 @@ const loo_kaart = ( unikaalne_nimi, nimi, tuup, suurus_bitid ) => {
 
     const fail__nupud = document.createElement( 'div' );
     fail__nupud.classList.add( 'fail__nupud' );
-    
+
     const fail__kopeerilink = document.createElement( 'div' );
     fail__kopeerilink.classList.add( 'fail__kopeerilink' );
     const kopeerilink_nupp = document.createElement( 'button' );
