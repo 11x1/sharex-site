@@ -23,12 +23,12 @@ class Fail:
     def on_tuhi( self ):
         return self.on_olemas
 
-    def json_formaat( self ) -> dict:
+    def json_formaat( self, kasutaja: Kasutaja ) -> dict:
         return {
             'nimi'          : self.nimi,
             'unikaalne_nimi': self.unikaalne_nimi,
             'tuup'          : self.tuup,
-            'suurus'        : self.suurus
+            'suurus'        : self.suurus( kasutaja.api_voti )
         }
 
     def __str__( self ) -> str:
