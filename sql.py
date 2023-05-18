@@ -17,15 +17,17 @@ log = Logija.log
 TABELI_NIMI = {
     'kasutajad'         : 'kasutajad',
     'uleslaadimised'    : 'uleslaadimised',
-    'failid'            : 'failid'
+    'failid'            : 'failid',
+    'kutsed'            : 'kutsed'
 }
 
 # salvestame vajalikud tabelinimed listina et saaksime neid programmi kävivitades kontrollida
 VAJALIKUD_TABELID = list( TABELI_NIMI.keys( ) )
 LOO_TABEL = {
-    "kasutajad": f"CREATE TABLE { TABELI_NIMI['kasutajad'] } ( id serial primary key not null, kasutajanimi varchar( 32 ) not null, parool varchar( 256 ) not null, api_voti varchar( 128 ) not null )",
+    "kasutajad": f"CREATE TABLE { TABELI_NIMI['kasutajad'] } ( id serial primary key not null, kasutajanimi varchar( 32 ) not null, parool varchar( 256 ) not null, api_voti varchar( 128 ) not null, kutsuja_id int not null )",
     "uleslaadimised": f"CREATE TABLE { TABELI_NIMI['uleslaadimised'] } ( kasutaja_id int not null, faili_id int not null )",
-    "failid": f"CREATE TABLE { TABELI_NIMI['failid'] } ( id serial primary key not null, nimi varchar( 128 ) not null, unikaalne_nimi varchar( 128 ) not null, failituup varchar( 32 ) not null )"
+    "failid": f"CREATE TABLE { TABELI_NIMI['failid'] } ( id serial primary key not null, nimi varchar( 128 ) not null, unikaalne_nimi varchar( 128 ) not null, failituup varchar( 32 ) not null )",
+    "kutsed": f"CREATE TABLE { TABELI_NIMI[ 'kutsed' ] } ( kasutaja_id int not null, kutse varchar( 128 ) not null )"
 }
 
 INDEKSID = {
@@ -37,7 +39,9 @@ INDEKSID = {
     'id'                    : 0,
     'failinimi'             : 1,
     'unikaalne_failinimi'   : 2,
-    'failitüüp'             : 3
+    'failitüüp'             : 3,
+    'kutse'                 : 1,
+    'kutsuja_id'            : 4
 }
 
 # väljad millega saame kasutajat otsida
@@ -56,7 +60,7 @@ LEIA_FAIL = {
     'failituup'         : 'failituup'
 }
 
-TUHI_KASUTAJA   = Kasutaja( None, None, None, None )
+TUHI_KASUTAJA   = Kasutaja( None, None, None, None, None )
 TUHI_FAIL       = Fail( None, None, None, None )
 
 def kustuta_failid_kaustast( kausta_aadress: str ):
@@ -144,7 +148,7 @@ class AndmebaasiSild:
         leitud = otsija.fetchall( )
 
         otsija.close( )
-        uhendus.close( ) # siin ei pea muudatusi läbi viima sest tegu on ainult info tagastamisega
+        uhendus.close( )  # siin ei pea muudatusi läbi viima sest tegu on ainult info tagastamisega
 
         log( f'Tagastati { len( leitud ) } valja.' )
         return leitud
@@ -207,7 +211,8 @@ class AndmebaasiSild:
         return Kasutaja( leitud[ INDEKSID[ 'kasutaja_id' ] ],
                          leitud[ INDEKSID[ 'kasutajanimi' ] ],
                          leitud[ INDEKSID[ 'api_voti' ] ],
-                         leitud[ INDEKSID[ 'parool' ] ] )
+                         leitud[ INDEKSID[ 'parool' ] ],
+                         leitud[ INDEKSID[ 'kutsuja_id' ] ])
 
     def leia_fail( self, millega: LEIA_FAIL, leitav_vaartus ) -> Fail:
         if millega not in LEIA_FAIL:
@@ -274,9 +279,56 @@ class AndmebaasiSild:
         leitud = self.leia( 'kasutajad', 'api_voti', api_voti )
         return len( leitud ) > 0
 
-    def loo_kasutaja( self, kasutajanimi: str, plaintext_parool: str ) -> Kasutaja:
+    def loo_kutse( self, kasutaja: Kasutaja ):
+        uhendus = self.uhenda( )
+        looja = uhendus.cursor( )
+
+        uus_kutse = Fernet.generate_key( ).decode( 'utf-8' )
+
+        if kasutaja.on_tuhi( ):
+            kasutaja.id = 0
+            uus_kutse = 'admin_kutse'
+
+        looja.execute( f'INSERT INTO { TABELI_NIMI[ "kutsed" ] } VALUES ( %s, %s )', ( kasutaja.id, uus_kutse ) )
+        uhendus.commit( )
+        looja.close( )
+        uhendus.close( )
+
+    def kasuta_kutse( self, kutse: str ) -> tuple:
+        uhendus = self.uhenda( )
+        kontrollija = uhendus.cursor( )
+
+        info = { 'kutse': kutse }
+
+        kontrollija.execute( f'SELECT * FROM { TABELI_NIMI[ "kutsed" ] } WHERE kutse = %(kutse)s',
+                              info )
+
+        saadud_kutse = kontrollija.fetchone( )
+        kontrollija.fetchall( )  # Mysql moodulile ei meeldi kui ma koiki tulemusi ei loe
+        kontrollija.close( )
+
+        if saadud_kutse is None:
+            return False, 'Kutset ei leitud'
+
+        kustutaja = uhendus.cursor( )
+        kustutaja.execute( f'DELETE FROM { TABELI_NIMI[ "kutsed" ] } WHERE kutse = %(kutse)s',
+                             info )
+        kustutaja.close( )
+
+        uhendus.commit( )
+        uhendus.close( )
+
+        return True, saadud_kutse[ INDEKSID[ 'kasutaja_id' ] ]
+
+    def leia_kutsed( self, kasutaja: Kasutaja ):
+        tagastatud_valjad = self.leia( TABELI_NIMI[ 'kutsed' ], 'kasutaja_id', kasutaja.id )
+        kutsed = list( vali[ INDEKSID[ 'kutse' ] ] for vali in tagastatud_valjad )
+        return kutsed
+
+    def loo_kasutaja( self, kasutajanimi: str, plaintext_parool: str, kutsuja_id: int ) -> Kasutaja:
         # Eeldame, et kasutaja olemasolu on juba kontrollitud
         # Samuti on kontrollitud ka parooli tugevus
+
         api_voti = Fernet.generate_key( )
 
         krupter = Fernet( api_voti )
@@ -285,7 +337,7 @@ class AndmebaasiSild:
         uhendus = self.uhenda( )
 
         sisestaja = uhendus.cursor( )
-        sisestaja.execute( 'INSERT INTO kasutajad ( kasutajanimi, parool, api_voti ) VALUES ( %s, %s, %s )', ( kasutajanimi, parool, api_voti.decode( 'utf-8' ) ) )
+        sisestaja.execute( 'INSERT INTO kasutajad ( kasutajanimi, parool, api_voti, kutsuja_id ) VALUES ( %s, %s, %s, %s )', ( kasutajanimi, parool, api_voti.decode( 'utf-8' ), kutsuja_id ) )
         uhendus.commit( )
 
         log( f'kasutaja { kasutajanimi } loodi edukalt' )
@@ -427,10 +479,10 @@ class AndmebaasiSild:
 
         return andmed
 
-    def kuva_kasutajad( self ) -> None:
+    def kuva_kasutajad( self ):
         uhendus = self.uhenda( )
 
         otsija = uhendus.cursor( )
         otsija.execute( 'SELECT kasutajanimi FROM kasutajad' )
 
-        print( otsija.fetchall( ) )
+        return otsija.fetchall( )

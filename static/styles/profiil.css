@@ -65,6 +65,30 @@ form#vaheta_parool > div {
 
     width: 200px;
 
+    color: var( --fail__link );
+}
+
+.profiil__nimi {
+    font-size: 1.2rem;
+}
+
+.profiil__kutsuja p {
+    color: var( --tekst__labipaistev );
+    border: none !important;
+    opacity: .5;
+    text-align: center;
+    margin: 0;
+
+    filter: blur( 2px );
+    transition: filter 200ms;
+}
+
+.profiil__kutsuja p:hover {
+    filter: blur( 0 );
+}
+
+.profiil__kutsuja p::before {
+    content: 'Kutsuja: ';
     color: var( --tekst );
 }
 
@@ -121,4 +145,25 @@ form#vaheta_parool div > * {
 #kodu-nupp button:hover {
     background: var( --nupp__taust__aktiivne );
     box-shadow: 0 0 10px 5px var( --nupp__taust__aktiivne );
+}
+
+.kutsed ul {
+    padding: 0;
+    text-align: center;
+    list-style: none;
+    color: var( --tekst );
+}
+
+.kutsed p {
+    overflow-wrap: break-word;
+}
+
+.kutsed ul .kutse__tekst {
+   filter: blur( 5px );
+   transition: filter 200ms;
+}
+
+.kutsed ul .kutse__tekst:hover {
+   cursor: pointer;
+   filter: blur( 0 );
 }

@@ -1,5 +1,6 @@
 import json
 import os  # Kasutajate failide leidmiseks kasutades
+import random
 import uuid  # Eriliste failinimede genereerimine
 
 from flask import Flask, request, render_template, redirect, url_for, make_response, Response, abort, escape, send_from_directory, jsonify
@@ -128,7 +129,6 @@ def leia_failid( lehe_nr: int, kasutaja: Kasutaja, failinimi: str, sildid, tuubi
 
     return failid_json
 
-
 # Sharexi meediafailide vastuvotja
 @Veebileht.post( '/lae_ules' )
 def meediafailide_vastuvotja( ):
@@ -150,6 +150,10 @@ def meediafailide_vastuvotja( ):
 
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], saadud_api_voti )
 
+    # Genereerime kutse 1/1000 korral
+    if random.randint( 1, 1000 ) == 678:
+        Andmebaas.loo_kutse( kasutaja )
+
     uleslaadimine = lae_fail_ules( saadud_fail, kasutaja )
 
     if not uleslaadimine.get( 'laeti_ules' ):
@@ -158,15 +162,22 @@ def meediafailide_vastuvotja( ):
 
     return jsonify( url=uleslaadimine.get( 'url' ) )
 
-@Veebileht.post( '/registreeri' ) # Lubame ainult POST requestid
+@Veebileht.post( '/registreeri' )  # Lubame ainult POST requestid
 def api_registreeri( ):
     lehele_saadetud_info = request.form
 
-    kasutajanimi = lehele_saadetud_info[ 'kasutajanimi' ].lower( )
-    kasutaja_on_olemas = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'nimi' ], kasutajanimi )
-
     tagastus = make_response( redirect( url_for( 'registreeri' ) ) )
     tagastus = sea_kupsis( tagastus, 'heateade', '' )
+
+    kutse = lehele_saadetud_info[ 'kutse' ]
+    kas_kutse_kasutati, veateade_voi_kutsuja_id = Andmebaas.kasuta_kutse( kutse )
+
+    if not kas_kutse_kasutati:
+        tagastus = sea_kupsis( tagastus, 'veateade', veateade_voi_kutsuja_id )
+        return tagastus
+
+    kasutajanimi = lehele_saadetud_info[ 'kasutajanimi' ].lower( )
+    kasutaja_on_olemas = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'nimi' ], kasutajanimi )
 
     if not kasutaja_on_olemas.on_tuhi( ):
         tagastus = sea_kupsis( tagastus, 'veateade', 'Kasutajanimi on olemas.' )
@@ -179,7 +190,7 @@ def api_registreeri( ):
         tagastus = sea_kupsis( tagastus, 'veateade', veateade )
         return tagastus
 
-    loodud_kasutaja = Andmebaas.loo_kasutaja( kasutajanimi, parool )
+    loodud_kasutaja = Andmebaas.loo_kasutaja( kasutajanimi, parool, veateade_voi_kutsuja_id )
 
     if loodud_kasutaja.on_tuhi( ):
         tagastus = sea_kupsis( tagastus, 'veateade', 'Kasutaja loomisel esines viga.' )
@@ -382,9 +393,19 @@ def profiil( ):
     kupsised = leia_kupsised( )
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], kupsised.get( 'api_voti' ) )
 
+    print( kasutaja.kutsuja_id )
+    kutsuja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'id' ], kasutaja.kutsuja_id )
+    print( kutsuja )
+    kutsed = Andmebaas.leia_kutsed( kasutaja )
+
+    if kutsuja.on_tuhi( ):
+        kutsuja = Kasutaja( 0, 'admin', None, None, None )
+
     return render_template( 'profiil.html',
                             kupsised=kupsised,
-                            kasutaja=kasutaja )
+                            kasutaja=kasutaja,
+                            kutsuja=kutsuja,
+                            kutsed=kutsed )
 
 @Veebileht.get( '/sharexi_konfiguratsioon' )
 def tagasta_sharexi_config( ):
@@ -440,5 +461,9 @@ def logi_valja( ):
     kupsiste_haldaja = kustuta_kupsised( kupsiste_haldaja )
     return kupsiste_haldaja
 
+
 if __name__ == "__main__":
+    if len( Andmebaas.kuva_kasutajad( ) ) == 0:
+        Andmebaas.loo_kutse( Kasutaja( None, None, None, None, None ) )
+
     Veebileht.run( debug=True )

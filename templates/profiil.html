@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="../static/styles/profiil.css" type="text/css">
     <link rel="stylesheet" href="../static/styles/navigatsioon.css" type="text/css">
 
+    <script src="../static/scripts/kopeeri_kutse.js" defer></script>
     <script src="../static/scripts/kustuta_kasutaja.js" defer></script>
     <script src="../static/scripts/kustuta_veateade.js" defer></script>
     <script src="../static/scripts/kustuta_heateade.js" defer></script>
@@ -54,13 +55,37 @@
                     <div class="profiil__nimi">
                         {{ kasutaja.nimi }}
                     </div>
+
+                    <div class="profiil__kutsuja">
+                        <p>{{ kutsuja.nimi }} ({{ kutsuja.id }})</p>
+                    </div>
+
                     <div class="profiil__parool">
                         <input name="uus_parool" type="password" minlength="8" placeholder="uus parool" required>
                     </div>
+
                     <div class="profiil__salvesta">
                         <button type="submit">💾 Salvesta</button>
                     </div>
                 </form>
+            </div>
+
+            <div class="aken">
+                <div class="kutsed">
+                    <ul>
+                        {% if kutsed %}
+                            <p>Klikka, et kopeerida kutse</p>
+                            {% for kutse in kutsed %}
+
+                                <li class="kutse__tekst" onclick="kopeeri_kutse( this )">
+                                    <p>{{ kutse }}</p>
+                                </li>
+                            {% endfor %}
+                        {% else %}
+                         <li>Sul pole kutsed :(</li>
+                        {% endif %}
+                    </ul>
+                </div>
             </div>
 
             <div class="aken">

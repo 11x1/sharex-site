@@ -2,14 +2,16 @@ from cryptography.fernet import Fernet
 from typing import Union  # Funktsiooni eri tüüpide kirjeldamiseks, "var: tüüp | tüüp" ei tööta enam
 
 class Kasutaja:
-    def __init__( self, id_: Union[ int, None ], nimi: Union[ str, None ], api_voti: Union[ str, None ], parool: Union[ str, None ] ):
+    def __init__( self, id_: Union[ int, None ], nimi: Union[ str, None ], api_voti: Union[ str, None ], parool: Union[ str, None ], kutsuja_id: Union[ int, None ] ):
         self.id = id_
         self.nimi = nimi
         self.api_voti = api_voti
         self.parool = parool
+        self.kutsuja_id = kutsuja_id
+
         self.on_olemas = True
 
-        if None in ( id_, nimi, api_voti ):
+        if None in ( id_, nimi, api_voti, kutsuja_id ):
             self.on_olemas = False
 
     def on_tuhi( self ):
