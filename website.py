@@ -27,6 +27,9 @@ Andmebaas = AndmebaasiSild(
     host            = andmebaasi_andmed[ 'host' ]
 )
 
+if len( Andmebaas.kuva_kasutajad( ) ) == 0:
+    Andmebaas.loo_kutse( Kasutaja( None, None, None, None, None ) )
+
 PRAEGUNE_KAUST = os.path.dirname(os.path.abspath(__file__))
 ULESLAADIMISTE_KAUST = os.path.join( PRAEGUNE_KAUST, 'uleslaadimised' ) + '/'
 AVALIKKUSE_TASEMED = {
@@ -463,7 +466,4 @@ def logi_valja( ):
 
 
 if __name__ == "__main__":
-    if len( Andmebaas.kuva_kasutajad( ) ) == 0:
-        Andmebaas.loo_kutse( Kasutaja( None, None, None, None, None ) )
-
     Veebileht.run( debug=True )
