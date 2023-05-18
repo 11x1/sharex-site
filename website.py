@@ -120,7 +120,7 @@ def leia_failid( lehe_nr: int, kasutaja: Kasutaja, failinimi: str, sildid, tuubi
                                                                                  sildid.split( ',' ), tuubid, algus,
                                                                                  lopp )
 
-    failid_json = list( map( lambda fail: fail.json_formaat( ), leitud_failid ) )
+    failid_json = list( map( lambda fail: fail.json_formaat( kasutaja ), leitud_failid ) )
 
     failid_json.append(
         { 'lehti': { 'enne': lehti_enne, 'parast': lehti_parast } }
