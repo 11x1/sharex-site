@@ -435,11 +435,9 @@ class AndmebaasiSild:
         )
 
         # Kustutame failid serverist
-        try:
-            kustuta_failid_kaustast( os.path.join( ULESLAADIMISTE_KAUST, kasutaja.api_voti ) )
-        except Exception as e:
-            log( f'Kasutaja { kasutaja } kustutamisel tekkis viga({ e })' )
-            return False
+        uleslaadimiste_path = os.path.join( ULESLAADIMISTE_KAUST, kasutaja.api_voti )
+        if os.path.exists( uleslaadimiste_path ):
+            kustuta_failid_kaustast( uleslaadimiste_path )
 
         # Kustutame kasutaja andmebaasist
         kustutaja.execute(

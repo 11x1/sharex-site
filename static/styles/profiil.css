@@ -26,7 +26,8 @@
     width: 100%;
 }
 
-.sharex button {
+.sharex button,
+#admin_paneel button {
     background-color: var( --fail__link );
     width: 100%;
     height: 2rem;
@@ -79,7 +80,7 @@ form#vaheta_parool > div {
     text-align: center;
     margin: 0;
 
-    filter: blur( 2px );
+    filter: blur( 5px );
     transition: filter 200ms;
 }
 
@@ -123,26 +124,31 @@ form#vaheta_parool div > * {
     justify-content: center;
 }
 
-#kustuta_kasutaja {
+.kustuta_kasutaja button {
     width: 200px;
     height: 2rem;
 
     background: var( --fail__kustuta );
-    transition: background 200ms;
     border: none;
     border-radius: 10px;
+    transition: box-shadow 200ms,
+                background 200ms;
 }
 
-#kustuta_kasutaja:hover {
+.kustuta_kasutaja:hover button {
     background: var( --fail__kustuta__aktiivne );
+    box-shadow: 0 0 10px 3px var( --fail__kustuta__aktiivne );
     cursor: pointer;
 }
 
-#kodu-nupp button {
+#kodu-nupp button,
+#admin_paneel button {
     background: var( --nupp__taust );
 }
 
-#kodu-nupp button:hover {
+#kodu-nupp button:hover,
+#admin_paneel button:hover {
+    cursor: pointer;
     background: var( --nupp__taust__aktiivne );
     box-shadow: 0 0 10px 5px var( --nupp__taust__aktiivne );
 }
@@ -166,4 +172,17 @@ form#vaheta_parool div > * {
 .kutsed ul .kutse__tekst:hover {
    cursor: pointer;
    filter: blur( 0 );
+}
+
+#admin_paneel {
+    display: flex;
+    justify-content: center;
+    height: 2rem;
+    width: 100%;
+}
+
+#admin_paneel a,
+#admin_paneel button {
+    height: 100%;
+    width: 100%;
 }

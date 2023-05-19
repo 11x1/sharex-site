@@ -76,7 +76,6 @@
                         {% if kutsed %}
                             <p>Klikka, et kopeerida kutse</p>
                             {% for kutse in kutsed %}
-
                                 <li class="kutse__tekst" onclick="kopeeri_kutse( this )">
                                     <p>{{ kutse }}</p>
                                 </li>
@@ -86,12 +85,19 @@
                         {% endif %}
                     </ul>
                 </div>
+                {% if kasutaja.id == 1 %}
+                    <div id="admin_paneel">
+                        <a href="/loo_kutse_admin">
+                            <button>💌 Loo kutse</button>
+                        </a>
+                    </div>
+                {% endif %}
             </div>
 
             <div class="aken">
-                <div class="kustuta_kasutaja">
+                <a class="kustuta_kasutaja">
                     <button id="kustuta_kasutaja">Kustuta kasutaja</button>
-                </div>
+                </a>
             </div>
         </section>
     </div>

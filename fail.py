@@ -12,6 +12,9 @@ class Fail:
         self.suurus_bitid = 45.67
         self.on_olemas = False
 
+        if nimi is not None and len( nimi ) > 16:
+            self.nimi = self.nimi[ :16 ] + '...'
+
         if None in ( id_, nimi, unikaalne_nimi, failituup ):
             self.on_olemas = False
 

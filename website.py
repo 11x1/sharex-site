@@ -172,11 +172,11 @@ def api_registreeri( ):
     tagastus = make_response( redirect( url_for( 'registreeri' ) ) )
     tagastus = sea_kupsis( tagastus, 'heateade', '' )
 
-    kutse = lehele_saadetud_info[ 'kutse' ]
-    kas_kutse_kasutati, veateade_voi_kutsuja_id = Andmebaas.kasuta_kutse( kutse )
+    parool = lehele_saadetud_info[ 'parool' ]
+    [ parool_on_tugev, veateade ] = kontrolli_parool( parool )
 
-    if not kas_kutse_kasutati:
-        tagastus = sea_kupsis( tagastus, 'veateade', veateade_voi_kutsuja_id )
+    if not parool_on_tugev:
+        tagastus = sea_kupsis( tagastus, 'veateade', veateade )
         return tagastus
 
     kasutajanimi = lehele_saadetud_info[ 'kasutajanimi' ].lower( )
@@ -186,11 +186,12 @@ def api_registreeri( ):
         tagastus = sea_kupsis( tagastus, 'veateade', 'Kasutajanimi on olemas.' )
         return tagastus
 
-    parool = lehele_saadetud_info[ 'parool' ]
-    [ parool_on_tugev, veateade ] = kontrolli_parool( parool )
 
-    if not parool_on_tugev:
-        tagastus = sea_kupsis( tagastus, 'veateade', veateade )
+    kutse = lehele_saadetud_info[ 'kutse' ]
+    kas_kutse_kasutati, veateade_voi_kutsuja_id = Andmebaas.kasuta_kutse( kutse )
+
+    if not kas_kutse_kasutati:
+        tagastus = sea_kupsis( tagastus, 'veateade', veateade_voi_kutsuja_id )
         return tagastus
 
     loodud_kasutaja = Andmebaas.loo_kasutaja( kasutajanimi, parool, veateade_voi_kutsuja_id )
@@ -388,6 +389,21 @@ def index( ):
                             kasutaja=kasutaja,
                             meediafailid=meediafailid[ :-1 ] )
 
+@Veebileht.get( '/loo_kutse_admin' )
+def loo_kutse_admin( ):
+    if not on_sisse_logitud( ):
+        return logi_valja( )
+
+    kupsised = leia_kupsised()
+    kasutaja = Andmebaas.leia_kasutaja(LEIA_KASUTAJA['api_voti'], kupsised.get('api_voti'))
+
+    if kasutaja.on_tuhi( ) or kasutaja.id != 1:
+        return logi_valja( )
+
+    Andmebaas.loo_kutse(kasutaja)
+    return redirect( url_for( 'profiil' ) )
+
+
 @Veebileht.get( '/profiil' )
 def profiil( ):
     if not on_sisse_logitud( ):
@@ -396,13 +412,12 @@ def profiil( ):
     kupsised = leia_kupsised( )
     kasutaja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'api_voti' ], kupsised.get( 'api_voti' ) )
 
-    print( kasutaja.kutsuja_id )
     kutsuja = Andmebaas.leia_kasutaja( LEIA_KASUTAJA[ 'id' ], kasutaja.kutsuja_id )
-    print( kutsuja )
     kutsed = Andmebaas.leia_kutsed( kasutaja )
 
     if kutsuja.on_tuhi( ):
         kutsuja = Kasutaja( 0, 'admin', None, None, None )
+
 
     return render_template( 'profiil.html',
                             kupsised=kupsised,
