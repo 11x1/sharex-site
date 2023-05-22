@@ -6,8 +6,12 @@ const leht = document.getElementById( 'leht' )
 
 let otsitakse = false
 let koik_failid_leitud = false
+let ootab_tulemust = false
 
 const otsi_faile = ( lehe_nr ) => {
+    if ( ootab_tulemust ) return
+    ootab_tulemust = true
+
     let failinimi = document.getElementById( 'faili_osaline_nimi' ).value
     let sildid = '' // document.getElementById( 'sildid' ).value
     let tuup = [ ]
@@ -84,6 +88,8 @@ const otsi_faile = ( lehe_nr ) => {
 
             return false
         }
+
+        ootab_tulemust = false
     }
 }
 
@@ -134,3 +140,12 @@ window.onscroll = _ => {
 
     otsi_faile( parseInt( praegune_lehe_nr ) + 1 )
 }
+
+let leia_koik_kui_valja_zoomitud = setInterval( ( ) => {
+    window.onscroll.call(undefined, undefined )
+    let praegune_lehe_nr = localStorage.getItem( 'otsi_lehe_nr' )
+
+    if ( praegune_lehe_nr === '0' || window.innerHeight < document.body.clientHeight ) {
+        clearInterval( leia_koik_kui_valja_zoomitud )
+    }
+}, 1000 )

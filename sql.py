@@ -481,6 +481,22 @@ class AndmebaasiSild:
         uhendus = self.uhenda( )
 
         otsija = uhendus.cursor( )
-        otsija.execute( 'SELECT kasutajanimi FROM kasutajad' )
+        otsija.execute( f'SELECT kasutajanimi FROM { TABELI_NIMI[ "kasutajad" ] }' )
 
-        return otsija.fetchall( )
+        leitud = otsija.fetchall( )
+        otsija.close( )
+        uhendus.close( )
+
+        return leitud
+
+    def kuva_kutsed( self ):
+        uhendus = self.uhenda( )
+
+        otsija = uhendus.cursor( )
+        otsija.execute( f'SELECT kutse FROM { TABELI_NIMI[ "kutsed" ] }' )
+
+        leitud = otsija.fetchall( )
+        otsija.close( )
+        uhendus.close( )
+
+        return leitud

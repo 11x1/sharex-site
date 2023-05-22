@@ -27,7 +27,7 @@ Andmebaas = AndmebaasiSild(
     host            = andmebaasi_andmed[ 'host' ]
 )
 
-if len( Andmebaas.kuva_kasutajad( ) ) == 0:
+if len( Andmebaas.kuva_kasutajad( ) ) == 0 and len( Andmebaas.kuva_kutsed( ) ) == 0:
     Andmebaas.loo_kutse( Kasutaja( None, None, None, None, None ) )
 
 PRAEGUNE_KAUST = os.path.dirname(os.path.abspath(__file__))
@@ -400,7 +400,7 @@ def loo_kutse_admin( ):
     if kasutaja.on_tuhi( ) or kasutaja.id != 1:
         return logi_valja( )
 
-    Andmebaas.loo_kutse(kasutaja)
+    Andmebaas.loo_kutse( kasutaja )
     return redirect( url_for( 'profiil' ) )
 
 

@@ -72,9 +72,12 @@ const loo_kaart = ( unikaalne_nimi, nimi, tuup, suurus ) => {
     const fail__kustuta = document.createElement( 'div' );
     fail__kustuta.classList.add( 'fail__kustuta' );
     const kustuta_nupp = document.createElement( 'button' );
-    kustuta_nupp.setAttribute( 'onclick', `kustuta_fail( this, ${ unikaalne_nimi } )` );
+    kustuta_nupp.setAttribute( 'onclick', `kustuta_fail( this, '${ unikaalne_nimi }' )` );
     kustuta_nupp.textContent = '🗑️';
     fail__kustuta.appendChild( kustuta_nupp );
+
+    fail__nupud.appendChild( fail__kopeerilink )
+    fail__nupud.appendChild( fail__kustuta )
 
     fail__juhend.appendChild( fail__andmed );
     fail__juhend.appendChild( fail__nupud );
