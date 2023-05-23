@@ -22,7 +22,7 @@ const otsi_faile = ( lehe_nr ) => {
         gif : document.getElementById( 'otsi_gif' ).checked
     }
 
-    if ( !( otsitavad_tuubid.pilt || otsitavad_tuubid.video || otsitavad_tuubid.gif ) || !otsitakse ) {
+    if ( !( otsitavad_tuubid.pilt && otsitavad_tuubid.video && otsitavad_tuubid.gif ) || !otsitakse ) {
         tuup.push( 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'gif' )
     } else {
         if ( otsitavad_tuubid.pilt ) {
