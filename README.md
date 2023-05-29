@@ -8,8 +8,8 @@ Valminud on:
 * API, POST ja GET routeid
 * Frontend, mis on loodud mugavaks kasutamiseks 
 
-#Eelvaade
-###Sisselogimine, pealeht ja profiil
+# Eelvaade  
+### Sisselogimine, pealeht ja profiil  
 <img src="https://i.imgur.com/oUdn679.png"  height="300">
 <img src="https://i.imgur.com/yn367lL.png"  height="300">
 <img src="https://i.imgur.com/240MVd8.png"  height="300">
