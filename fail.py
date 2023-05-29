@@ -10,7 +10,7 @@ class Fail:
         self.unikaalne_nimi = unikaalne_nimi
         self.tuup = failituup
         self.suurus_bitid = 45.67
-        self.on_olemas = False
+        self.on_olemas = True
 
         if nimi is not None and len( nimi ) > 16:
             self.nimi = self.nimi[ :16 ] + '...'
@@ -24,7 +24,7 @@ class Fail:
         return round( suurus_bitid / 1000, 2 )
 
     def on_tuhi( self ):
-        return self.on_olemas
+        return not self.on_olemas
 
     def json_formaat( self, kasutaja: Kasutaja ) -> dict:
         return {

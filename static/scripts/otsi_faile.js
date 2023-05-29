@@ -4,10 +4,16 @@ const otsi_nupp = document.getElementById( 'otsi_saada' )
 const kaardid = document.getElementById( 'kaardid' )
 const leht = document.getElementById( 'leht' )
 
-let otsitakse = false
+let cache_otsitakse = false
 let koik_failid_leitud = false
+let ootab_tulemust = false
 
-const otsi_faile = ( lehe_nr ) => {
+const otsi_faile = ( lehe_nr, otsitakse ) => {
+    if ( ootab_tulemust ) return
+    ootab_tulemust = true
+
+    cache_otsitakse = otsitakse
+
     let failinimi = document.getElementById( 'faili_osaline_nimi' ).value
     let sildid = '' // document.getElementById( 'sildid' ).value
     let tuup = [ ]
@@ -18,7 +24,7 @@ const otsi_faile = ( lehe_nr ) => {
         gif : document.getElementById( 'otsi_gif' ).checked
     }
 
-    if ( !( otsitavad_tuubid.pilt || otsitavad_tuubid.video || otsitavad_tuubid.gif ) || !otsitakse ) {
+    if ( ( !otsitavad_tuubid.pilt && !otsitavad_tuubid.video && !otsitavad_tuubid.gif ) || !otsitakse ) {
         tuup.push( 'png', 'jpg', 'jpeg', 'mp4', 'mov', 'gif' )
     } else {
         if ( otsitavad_tuubid.pilt ) {
@@ -80,32 +86,35 @@ const otsi_faile = ( lehe_nr ) => {
 
         otsija_vorm.onsubmit = sundmus => {
             sundmus.preventDefault( )
-            otsi_faile( 1 )
+            otsi_faile( 1, otsitakse )
 
             return false
         }
+
+        ootab_tulemust = false
     }
 }
 
-otsija_vorm.onsubmit = sundmus => {
+function otsija_vorm_override( sundmus ) {
     koik_failid_leitud = false
 
     while ( kaardid.children.length > 1 ) {
         kaardid.removeChild( kaardid.lastChild )
     }
 
-    otsitakse = true
-    sundmus.preventDefault( )
+    if ( sundmus !== undefined ) {
+        sundmus.preventDefault( )
+    }
 
-    otsi_faile( 1 )
+    otsi_faile( 1, true )
 
     return false
 }
 
+otsija_vorm.onsubmit = otsija_vorm_override
+
 otsi_nupp.onclick = ( ) => {
-    while ( kaardid.children.length > 1 ) {
-        kaardid.removeChild( kaardid.lastChild )
-    }
+    otsija_vorm_override( )
 }
 
 otsija_vorm.onreset = _ => {
@@ -113,10 +122,15 @@ otsija_vorm.onreset = _ => {
 
     otsitakse = false
     koik_failid_leitud = false
+    ootab_tulemust = false
+
+    while ( kaardid.children.length > 1 ) {
+        kaardid.removeChild( kaardid.lastChild )
+    }
 
     localStorage.setItem( 'otsi_lehe_nr', '1' )
 
-    setTimeout( ( _ ) => otsi_faile( 1 ), 10 ) // Vaike valeajastus kui kutsuksime kohe => failid ei oleks taastatud
+    setTimeout( ( _ ) => otsi_faile( 1, false ), 10 ) // Vaike valeajastus kui kutsuksime kohe => failid ei oleks taastatud
 }
 
 localStorage.setItem( 'otsi_lehe_nr', '1' )
@@ -132,5 +146,15 @@ window.onscroll = _ => {
     if ( isNaN( parseInt( praegune_lehe_nr ) || koik_failid_leitud ) )
         return // Kui ei saa numbrit
 
-    otsi_faile( parseInt( praegune_lehe_nr ) + 1 )
+
+    otsi_faile( parseInt( praegune_lehe_nr ) + 1, cache_otsitakse )
 }
+
+let leia_koik_kui_valja_zoomitud = setInterval( ( ) => {
+    window.onscroll.call(undefined, undefined )
+    let praegune_lehe_nr = localStorage.getItem( 'otsi_lehe_nr' )
+
+    if ( praegune_lehe_nr === '0' || window.innerHeight < document.body.clientHeight ) {
+        clearInterval( leia_koik_kui_valja_zoomitud )
+    }
+}, 1000 )
