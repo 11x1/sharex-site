@@ -8,6 +8,12 @@ Valminud on:
 * API, POST ja GET routeid
 * Frontend, mis on loodud mugavaks kasutamiseks 
 
+#Eelvaade
+###Sisselogimine, pealeht ja profiil
+<img src="https://i.imgur.com/oUdn679.png"  height="300">
+<img src="https://i.imgur.com/yn367lL.png"  height="300">
+<img src="https://i.imgur.com/240MVd8.png"  height="300">
+
 # Setup
 1. Lae repo endale arvutisse alla
 2. Lae alla MYSql server (näiteks [MYSql Workbench](https://www.mysql.com/products/workbench/) või [XAMPP](https://www.apachefriends.org/download.html))  
