@@ -1,5 +1,5 @@
 # Sharex site
-Antud projekt on valminud programmeerimise kvalifikatsioonikursuse lõputööna.  
+Antud projekt on valminud programmeerimise kvalifikatsioonikursuse lõputööna. Eestikeelsed muutujad on tingitud Tartu Ülikooli kvalifikatsioonikursuse lõputöö nõuetest.   
   
 Valminud on:
 * [Veebileht](https://wxcoy.cc)
