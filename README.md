@@ -11,8 +11,8 @@ Valminud on:
 # Eelvaade  
 ### Sisselogimine, pealeht ja profiil  
 <img src="https://i.imgur.com/oUdn679.png"  height="300">
-<img src="https://i.imgur.com/yn367lL.png"  height="300">
-<img src="https://i.imgur.com/240MVd8.png"  height="300">
+<img src="https://i.imgur.com/9i7oRWw.png"  height="300">
+<img src="https://i.imgur.com/0AZiamq.png"  height="300">
 
 # Setup
 1. Lae repo endale arvutisse alla
