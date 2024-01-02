@@ -2,7 +2,7 @@
 Antud projekt on valminud programmeerimise kvalifikatsioonikursuse lõputööna. Eestikeelsed muutujad on tingitud Tartu Ülikooli kvalifikatsioonikursuse lõputöö nõuetest.   
   
 Valminud on:
-* [Veebileht](https://wxcoy.cc)
+* Veebileht
 * SQL ühenduse haldaja
 * HTML template failid
 * API, POST ja GET routeid
@@ -18,15 +18,15 @@ Valminud on:
 1. Lae repo endale arvutisse alla
 2. Lae alla MYSql server (näiteks [MYSql Workbench](https://www.mysql.com/products/workbench/) või [XAMPP](https://www.apachefriends.org/download.html))  
 2.1. Jooksuta SQL server (XAMPPiga näide)  
-![XAMPP preview](https://wxcoy.cc/fail/9a1db3d6-1c28-4c33-88e3-c70215474cbb)
-![XAMPP preview](https://wxcoy.cc/fail/f6062a04-70ff-4383-a007-3a57aadbb3cb)  
+![XAMPP preview](https://i.imgur.com/CDKynx2.png)
+![XAMPP preview](https://i.imgur.com/wm3qjCI.png)  
 2.2. Jäta serveri kasutaja info meelde või loo uus meelepärane kasutaja
 3. Muuda andmebaasi kasutajaandmed vastavaks 'sql_config.json'-s  
 4. Pane veebileht käima jooksutades faili 'website.py'  
 4.1. Esimese (nö. admin) veebilehe kasutaja saab luua kutsega 'admin_kutse'   
 4.2. Et kasutada ShareX-i, peate navigeerima lehele 'Profiil' ning alla laadima ShareX-i konfiguratsiooni  
-![Profiil](https://wxcoy.cc/fail/83f68c84-41bf-4f89-8d8e-f7019b57d6f5)  
-![ShareX konfiguratsioon](https://wxcoy.cc/fail/6eb779eb-f593-484a-9fa8-582869d78cb6)
+![Profiil](https://i.imgur.com/9iaEOvW.png)  
+![ShareX konfiguratsioon](https://i.imgur.com/s70ogxA.png)
 5. Laadige alla [ShareX](https://getsharex.com/downloads)  
 5.1. Ava ShareX ja navigeeri vasakul navigatsiooniribal nupule 'Destinations' ning vajuta seda  
 ![pilt](https://i.imgur.com/4QxbNKD.png)
